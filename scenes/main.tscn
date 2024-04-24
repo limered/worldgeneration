@@ -1,0 +1,37 @@
+[gd_scene load_steps=6 format=3 uid="uid://dhtu2smaybcsf"]
+
+[ext_resource type="Script" path="res://procedural/terrain/TerrainGeneration.cs" id="1_8dqj3"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_fk46r"]
+sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+
+[sub_resource type="Sky" id="Sky_ekaju"]
+sky_material = SubResource("ProceduralSkyMaterial_fk46r")
+
+[sub_resource type="Environment" id="Environment_ota5g"]
+background_mode = 2
+sky = SubResource("Sky_ekaju")
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_rps43"]
+noise_type = 0
+frequency = 0.004
+
+[node name="Node3D" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_ota5g")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75, -0.433013, 0, 0, 0)
+shadow_enabled = true
+
+[node name="TerrainGeneration" type="Node3D" parent="."]
+script = ExtResource("1_8dqj3")
+_noise = SubResource("FastNoiseLite_rps43")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.689481, 0.724304, 0, -0.724304, 0.689481, -1.17613, 53.5418, 61.203)
+fov = 60.0
