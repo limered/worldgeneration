@@ -21,12 +21,12 @@ glow_enabled = true
 environment = SubResource("Environment_ota5g")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75, -0.433013, 0, 0, 0)
+transform = Transform3D(0.394842, 0.563348, -0.725768, -0.270451, 0.826219, 0.494185, 0.878041, 0.00115953, 0.478583, 0, 24.2344, -30.1292)
 shadow_enabled = true
 
 [node name="TerrainGeneration" type="Node3D" parent="."]
 script = ExtResource("1_rakhh")
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.689481, 0.724304, 0, -0.724304, 0.689481, -1.17613, 53.5418, 61.203)
+transform = Transform3D(1, 0, 0, 0, 0.408825, 0.912613, 0, -0.912613, 0.408825, -1.17613, 34.8055, 22.1396)
 fov = 60.0

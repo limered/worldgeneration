@@ -16,8 +16,8 @@ public class FastNoiseSampler : ISampler<FastNoiseLite>
         return _noise.GetNoise2D(x, z);
     }
 
-    public void Update()
+    public bool Update()
     {
-        // ignore
+        return true;
     }
 }
