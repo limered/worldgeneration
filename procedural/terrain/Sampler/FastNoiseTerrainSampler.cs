@@ -2,7 +2,7 @@
 
 namespace dla_terrain.procedural.terrain.Sampler;
 
-public class FastNoiseSampler : ISampler<FastNoiseLite>
+public class FastNoiseTerrainSampler : ITerrainSampler<FastNoiseLite>
 {
     private FastNoiseLite _noise;
 

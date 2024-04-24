@@ -15,6 +15,8 @@ public partial class TerrainGeneration : Node
     private int _sizeDepth = 50;
     private int _sizeWidth = 50;
 
+    private readonly ITerrainSampler<FastNoiseLite> _terrainSampler = new FastNoiseTerrainSampler();
+
     public override void _Ready()
     {
         _sampler.Init(new DlaSamplerConfig
