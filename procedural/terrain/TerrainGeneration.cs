@@ -5,18 +5,21 @@ namespace dla_terrain.procedural.terrain;
 
 public partial class TerrainGeneration : Node
 {
+    private readonly ISampler<DlaSamplerConfig> _sampler = new DlaSampler();
     private MeshInstance3D _mesh;
-    private int _sizeDepth = 100;
-    private int _sizeWidth = 100;
-    private int _meshResolution = 2;
+    private int _meshResolution = 1;
 
     [Export] private FastNoiseLite _noise;
-
-    private readonly ISampler<FastNoiseLite> _sampler = new FastNoiseSampler();
+    private int _sizeDepth = 100;
+    private int _sizeWidth = 100;
 
     public override void _Ready()
     {
-        _sampler.Init(_noise);
+        _sampler.Init(new DlaSamplerConfig
+        {
+            MaxWidth = _sizeWidth * _meshResolution + 2,
+            MaxHeight = _sizeDepth * _meshResolution + 2
+        });
         Generate();
     }
 
@@ -36,10 +39,11 @@ public partial class TerrainGeneration : Node
         var arrayPlane = surface.Commit();
         data.CreateFromSurface(arrayPlane, 0);
 
-        for (var i = 0; i < data.GetVertexCount(); i++)
+        var vertexCount = data.GetVertexCount();
+        for (var i = 0; i < vertexCount; i++)
         {
             var v = data.GetVertex(i);
-            v.Y = _sampler.SampleTerrainHeight(v.X, v.Z) * 50;
+            v.Y = _sampler.SampleTerrainHeight(i, 0) * 5;
             data.SetVertex(i, v);
         }
 
@@ -53,7 +57,7 @@ public partial class TerrainGeneration : Node
         _mesh = new MeshInstance3D();
         _mesh.Mesh = surface.Commit();
         _mesh.CreateTrimeshCollision();
-        _mesh.CastShadow = GeometryInstance3D.ShadowCastingSetting.Off;
+        _mesh.CastShadow = GeometryInstance3D.ShadowCastingSetting.On;
         _mesh.AddToGroup("NavSource");
         AddChild(_mesh);
     }

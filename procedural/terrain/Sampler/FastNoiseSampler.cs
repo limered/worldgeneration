@@ -6,13 +6,18 @@ public class FastNoiseSampler : ISampler<FastNoiseLite>
 {
     private FastNoiseLite _noise;
 
-    public void Init(FastNoiseLite noise)
+    public void Init(FastNoiseLite config)
     {
-        _noise = noise;
+        _noise = config;
     }
 
     public float SampleTerrainHeight(float x, float z)
     {
         return _noise.GetNoise2D(x, z);
+    }
+
+    public void Update()
+    {
+        // ignore
     }
 }

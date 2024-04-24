@@ -2,6 +2,7 @@
 
 public interface ISampler<in T>
 {
-    void Init(T generator);
+    void Init(T config);
     float SampleTerrainHeight(float x, float z);
+    void Update();
 }
