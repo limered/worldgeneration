@@ -16,18 +16,19 @@ public class DlaSampler : ISampler<DlaSamplerConfig>
     public void Init(DlaSamplerConfig config)
     {
         _randomNumberGenerator = new RandomNumberGenerator();
+        _randomNumberGenerator.Seed = (ulong)GD.Hash("emil");
 
         _config = config;
 
-        _center = new Vector2I(config.MaxWidth / 2, config.MaxHeight / 2);
-        _tree = new List<Vector2I>(config.MaxPoints)
+        _center = new Vector2I(config.Width / 2, config.Height / 2);
+        _tree = new List<Vector2I>(config.Points)
         {
             _center
         };
 
         _currentWalker = new Vector2I(
-            _randomNumberGenerator.RandiRange(0, config.MaxWidth),
-            _randomNumberGenerator.RandiRange(0, config.MaxHeight));
+            _randomNumberGenerator.RandiRange(0, config.Width),
+            _randomNumberGenerator.RandiRange(0, config.Height));
     }
 
     public float SampleTerrainHeight(float x, float z)
@@ -43,66 +44,83 @@ public class DlaSampler : ISampler<DlaSamplerConfig>
 
     public bool Update()
     {
-        if (_tree.Count >= _config.MaxPoints) return true;
-
-        _currentWalker.X += _randomNumberGenerator.RandiRange(-1, 1);
-        _currentWalker.Y += _randomNumberGenerator.RandiRange(-1, 1);
-
-        var dir = ((Vector2)_center - _currentWalker) * (float)0.3;
-        _currentWalker += (Vector2I)dir;
-
-        _currentWalker.X = Math.Clamp(_currentWalker.X, 0, _config.MaxWidth);
-        _currentWalker.Y = Math.Clamp(_currentWalker.Y, 0, _config.MaxHeight);
-
-        var stuck = _tree
-            .Select(point => (point - _currentWalker).Length())
-            .Any(dist => dist <= 1.0);
-
-        if (!stuck) return false;
-
-        _tree.Add(_currentWalker);
-        SpawnNewPoint();
+        if (_tree.Count >= _config.Points) return true;
         
-        return false;
+        MoveCurrent();
+        
+        return true;
+    }
+
+    private Vector2I Velocity(int x, int y)
+    {
+        return new Vector2I(
+            _randomNumberGenerator.RandiRange(-1, 1),
+            _randomNumberGenerator.RandiRange(-1, 1));
+    }
+    
+    private void MoveCurrent()
+    {
+        for (var i = 0; i < _config.MovementIterations; i++)
+        {
+            var velocity = Velocity(_currentWalker.X, _currentWalker.Y); 
+            var dir = ((Vector2)_center - _currentWalker).Normalized() * (float)0.3;
+            _currentWalker += velocity + (Vector2I)dir;
+
+            _currentWalker.X = Math.Clamp(_currentWalker.X, 0, _config.Width);
+            _currentWalker.Y = Math.Clamp(_currentWalker.Y, 0, _config.Height);
+
+            var stuck = _tree
+                .Select(point => (point - _currentWalker).Length())
+                .Any(dist => dist <= 1.0);
+
+            if (stuck)
+            {
+                _tree.Add(_currentWalker);
+                SpawnNewPoint();
+                break;
+            }
+        }
     }
 
     private void SpawnNewPoint()
     {
-        var potentialPoint = new Vector2I(
-            _randomNumberGenerator.RandiRange(0, _config.MaxWidth),
-            _randomNumberGenerator.RandiRange(0, _config.MaxHeight));
-
-        while (_tree.Contains(potentialPoint))
-            potentialPoint = new Vector2I(
-                _randomNumberGenerator.RandiRange(0, _config.MaxWidth),
-                _randomNumberGenerator.RandiRange(0, _config.MaxHeight));
+        var direction = _randomNumberGenerator.RandiRange(0, 4);
+        var potentialPoint = direction switch
+        {
+            0 => new Vector2I(0, _randomNumberGenerator.RandiRange(0, _config.Height)),
+            1 => new Vector2I(_randomNumberGenerator.RandiRange(0, _config.Width), 0),
+            2 => new Vector2I(_config.Width, _randomNumberGenerator.RandiRange(0, _config.Height)),
+            _ => new Vector2I(_randomNumberGenerator.RandiRange(0, _config.Width), _config.Height)
+        };
 
         _currentWalker = potentialPoint;
     }
 
     private float Size(float i)
     {
-        return (_config.MaxSize / _config.MaxPoints * (_config.MaxSize - i)) + _config.MaxSize;
+        return _config.Size / _config.Points * (_config.Size - i) + _config.Size;
     }
 
 
     private Vector2I IndexToCoord(int i)
     {
-        var x = i % _config.MaxWidth;
-        var z = i / _config.MaxWidth;
+        var x = i % _config.Width;
+        var z = i / _config.Width;
         return new Vector2I(x, z);
     }
 
     private int CoordToIndex(int x, int z)
     {
-        return x + z * _config.MaxWidth;
+        return x + z * _config.Width;
     }
 }
 
 public record struct DlaSamplerConfig
 {
-    public int MaxHeight;
-    public int MaxPoints;
-    public float MaxSize;
-    public int MaxWidth;
+    public int Height;
+    public int MovementIterations;
+    public int Points;
+    public float Size;
+    public int Width;
+    public FastNoiseLite Noise;
 }

@@ -7,7 +7,7 @@ public partial class TerrainGeneration : Node
 {
     private readonly ISampler<DlaSamplerConfig> _sampler = new DlaSampler();
     private MeshInstance3D _mesh;
-    private int _meshResolution = 2;
+    private int _meshResolution = 1;
 
     [Export] private FastNoiseLite _noise;
     private int _sizeDepth = 50;
@@ -17,10 +17,12 @@ public partial class TerrainGeneration : Node
     {
         _sampler.Init(new DlaSamplerConfig
         {
-            MaxWidth = _sizeWidth * _meshResolution + 2,
-            MaxHeight = _sizeDepth * _meshResolution + 2,
-            MaxPoints = 2000,
-            MaxSize = 5
+            Width = _sizeWidth * _meshResolution + 2,
+            Height = _sizeDepth * _meshResolution + 2,
+            Points = 500,
+            Size = 2,
+            MovementIterations = 1000,
+            Noise = _noise
         });
         Generate();
     }
