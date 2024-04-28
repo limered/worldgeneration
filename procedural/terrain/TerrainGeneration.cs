@@ -1,4 +1,5 @@
 using dla_terrain.procedural.terrain.Sampler;
+using dla_terrain.procedural.terrain.Textures;
 using Godot;
 
 namespace dla_terrain.procedural.terrain;
@@ -10,6 +11,7 @@ public partial class TerrainGeneration : Node
     private int _meshResolution = 1;
 
     [Export] private FastNoiseLite _noise;
+    [Export] private ShaderMaterial _mat;
     private int _sizeDepth = 50;
     private int _sizeWidth = 50;
 
@@ -36,6 +38,10 @@ public partial class TerrainGeneration : Node
         // _mesh.CreateTrimeshCollision();
         _mesh.CastShadow = GeometryInstance3D.ShadowCastingSetting.On;
         // _mesh.AddToGroup("NavSource");
+
+        _mat.SetShaderParameter("albedo", new DlaTexture().Create());
+        _mesh.MaterialOverride = _mat;
+        
         AddChild(_mesh);
     }
 
@@ -45,9 +51,11 @@ public partial class TerrainGeneration : Node
         {
             Size = new Vector2(_sizeWidth, _sizeDepth),
             SubdivideDepth = _sizeDepth * _meshResolution,
-            SubdivideWidth = _sizeWidth * _meshResolution
+            SubdivideWidth = _sizeWidth * _meshResolution,
         };
-
+        
+        
+        
         var surface = new SurfaceTool();
         var data = new MeshDataTool();
         surface.CreateFrom(planeMesh, 0);

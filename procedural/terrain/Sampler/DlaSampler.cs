@@ -5,13 +5,26 @@ using Godot;
 
 namespace dla_terrain.procedural.terrain.Sampler;
 
+public class DlaTree : List<Vector2I>
+{
+    private Dictionary<int, int[]> _neighbours = new();
+    public DlaTree(int points) : base(points)
+    {
+    }
+
+    public void AddNeighbour(int pointId, int newNeighbourId)
+    {
+        
+    }
+}
+
 public class DlaSampler : ISampler<DlaSamplerConfig>
 {
     private static Vector2I _center;
     private DlaSamplerConfig _config;
     private Vector2I _currentWalker;
     private RandomNumberGenerator _randomNumberGenerator;
-    private List<Vector2I> _tree;
+    private DlaTree _tree;
 
     public void Init(DlaSamplerConfig config)
     {
@@ -21,7 +34,7 @@ public class DlaSampler : ISampler<DlaSamplerConfig>
         _config = config;
 
         _center = new Vector2I(config.Width / 2, config.Height / 2);
-        _tree = new List<Vector2I>(config.Points)
+        _tree = new DlaTree(config.Points)
         {
             _center
         };
@@ -45,24 +58,24 @@ public class DlaSampler : ISampler<DlaSamplerConfig>
     public bool Update()
     {
         if (_tree.Count >= _config.Points) return true;
-        
+
         MoveCurrent();
-        
+
         return true;
     }
 
-    private Vector2I Velocity(int x, int y)
+    private Vector2I Velocity()
     {
         return new Vector2I(
             _randomNumberGenerator.RandiRange(-1, 1),
             _randomNumberGenerator.RandiRange(-1, 1));
     }
-    
+
     private void MoveCurrent()
     {
         for (var i = 0; i < _config.MovementIterations; i++)
         {
-            var velocity = Velocity(_currentWalker.X, _currentWalker.Y); 
+            var velocity = Velocity();
             var dir = ((Vector2)_center - _currentWalker).Normalized() * (float)0.3;
             _currentWalker += velocity + (Vector2I)dir;
 
@@ -119,8 +132,8 @@ public record struct DlaSamplerConfig
 {
     public int Height;
     public int MovementIterations;
+    public FastNoiseLite Noise;
     public int Points;
     public float Size;
     public int Width;
-    public FastNoiseLite Noise;
 }
