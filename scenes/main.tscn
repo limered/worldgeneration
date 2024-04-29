@@ -38,5 +38,5 @@ _noise = SubResource("FastNoiseLite_360q3")
 _mat = SubResource("ShaderMaterial_dk8nj")
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.94263, 0.333839, 0, -0.333839, 0.94263, -1.17613, 12.4301, 28.1767)
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 30, 0)
 fov = 80.0
