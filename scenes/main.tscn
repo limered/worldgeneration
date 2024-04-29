@@ -1,7 +1,7 @@
 [gd_scene load_steps=8 format=3 uid="uid://dhtu2smaybcsf"]
 
-[ext_resource type="Script" path="res://procedural/terrain/TerrainGeneration.cs" id="1_b1oym"]
-[ext_resource type="Shader" path="res://scenes/ground.gdshader" id="2_nh8r2"]
+[ext_resource type="Script" path="res://Procedural/Terrain/TerrainGeneration.cs" id="1_1wf2s"]
+[ext_resource type="Shader" path="res://Shaders/ground.gdshader" id="2_mo6f6"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_fk46r"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
@@ -21,7 +21,7 @@ noise_type = 3
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_dk8nj"]
 render_priority = 0
-shader = ExtResource("2_nh8r2")
+shader = ExtResource("2_mo6f6")
 
 [node name="Node3D" type="Node3D"]
 
@@ -33,7 +33,7 @@ transform = Transform3D(0.66262, -0.0782871, 0.744853, 0, 0.994521, 0.104528, -0
 shadow_enabled = true
 
 [node name="TerrainGeneration" type="Node3D" parent="."]
-script = ExtResource("1_b1oym")
+script = ExtResource("1_1wf2s")
 _noise = SubResource("FastNoiseLite_360q3")
 _mat = SubResource("ShaderMaterial_dk8nj")
 

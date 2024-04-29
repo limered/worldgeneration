@@ -1,8 +1,8 @@
-using dla_terrain.procedural.terrain.Sampler;
-using dla_terrain.procedural.terrain.Textures;
+using dla_terrain.Procedural.Terrain.Sampler;
+using dla_terrain.Procedural.Terrain.Textures;
 using Godot;
 
-namespace dla_terrain.procedural.terrain;
+namespace dla_terrain.Procedural.Terrain;
 
 public partial class TerrainGeneration : Node
 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-namespace dla_terrain.procedural.terrain.Textures;
+namespace dla_terrain.Procedural.Terrain.Textures;
 
 public class DlaTexture
 {
@@ -13,9 +13,9 @@ public class DlaTexture
     private Vector2I _center;
     private Vector2I _walker;
 
-    private Image _image;
+    private readonly Image[] _images = new Image[5];
 
-    private const int StartSize = 64;
+    private const int StartSize = 8;
 
     public DlaTexture()
     {
@@ -30,16 +30,22 @@ public class DlaTexture
 
         FillTree();
 
-        _image = Image.Create(StartSize, StartSize, false, Image.Format.Rgbaf);
-        _image.Fill(Colors.Black);
-        DrawTree();
+        for (var i = 0; i < 5; i++)
+        {
+            var size = i == 0 ? StartSize : StartSize * (2 << (i - 1));
+            GD.Print(size);
+            _images[i] = Image.Create(size, size, false, Image.Format.Rgbaf);
+            _images[i].Fill(Colors.Black);
+        }
+        
+        DrawTree(0);
 
-        return ImageTexture.CreateFromImage(_image);
+        return ImageTexture.CreateFromImage(_images[0]);
     }
 
     private void FillTree()
     {
-        for (var walkerIndex = 0; walkerIndex < 300; walkerIndex++)
+        for (var walkerIndex = 0; walkerIndex < 20; walkerIndex++)
         {
             SpawnNewPoint();
 
@@ -84,12 +90,12 @@ public class DlaTexture
             _rnd.RandiRange(-1, 1));
     }
 
-    private void DrawTree()
+    private void DrawTree(int id)
     {
         for (var i = 0; i < _tree.Count; i++)
         {
             var point = _tree[i];
-            _image.SetPixel(point.X, point.Y, Colors.White - Colors.White/_tree.Count * i);
+            _images[id].SetPixel(point.X, point.Y, Colors.White - Colors.White/_tree.Count * i);
         }
     }
 }

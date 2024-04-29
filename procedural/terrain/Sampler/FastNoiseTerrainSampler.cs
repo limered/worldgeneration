@@ -1,6 +1,6 @@
 ﻿using Godot;
 
-namespace dla_terrain.procedural.terrain.Sampler;
+namespace dla_terrain.Procedural.Terrain.Sampler;
 
 public class FastNoiseTerrainSampler : ITerrainSampler<FastNoiseLite>
 {

@@ -1,4 +1,4 @@
-﻿namespace dla_terrain.procedural.terrain.Sampler;
+﻿namespace dla_terrain.Procedural.Terrain.Sampler;
 
 public interface ITerrainSampler<in T>
 {
