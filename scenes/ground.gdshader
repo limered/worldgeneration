@@ -15,6 +15,7 @@ void fragment(){
 	METALLIC = 0.0;
 	ROUGHNESS = 0.01 * (1.0 - fresnel);
 	ALBEDO = vec3(0.1, 0.3, 0.5) + (0.1 * fresnel);
+	NORMAL = texture(albedo, UV).xyz;
 }
 
 //void light() {

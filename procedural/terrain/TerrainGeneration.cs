@@ -8,7 +8,7 @@ public partial class TerrainGeneration : Node
 {
     private readonly ITerrainSampler<DlaSamplerConfig> _sampler = new DlaSampler();
     private MeshInstance3D _mesh;
-    private int _meshResolution = 1;
+    private int _meshResolution = 3;
 
     [Export] private FastNoiseLite _noise;
     [Export] private ShaderMaterial _mat;
@@ -62,14 +62,6 @@ public partial class TerrainGeneration : Node
         var arrayPlane = surface.Commit();
         data.CreateFromSurface(arrayPlane, 0);
 
-        var vertexCount = data.GetVertexCount();
-        for (var i = 0; i < vertexCount; i++)
-        {
-            var v = data.GetVertex(i);
-            // v.Y = _sampler.SampleTerrainHeight(i, 0);
-            data.SetVertex(i, v);
-        }
-
         arrayPlane.ClearSurfaces();
 
         data.CommitToSurface(arrayPlane);
@@ -81,10 +73,6 @@ public partial class TerrainGeneration : Node
 
     public override void _Process(double delta)
     {
-        // if (_sampler.Update())
-        // {
-        //     var surface = CreateSurface();
-        //     _mesh.Mesh = surface.Commit();
-        // }
+        
     }
 }

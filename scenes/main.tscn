@@ -29,7 +29,7 @@ shader = ExtResource("2_nh8r2")
 environment = SubResource("Environment_ota5g")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.85997, -0.510169, -0.0134146, 0.4934, 0.82441, 0.277315, -0.130418, -0.245101, 0.960686, 0, 24.288, -17.8632)
+transform = Transform3D(0.574601, -0.588907, 0.56835, 0.481645, 0.804769, 0.346936, -0.661704, 0.0743929, 0.746066, 0, 24.288, -17.8632)
 shadow_enabled = true
 
 [node name="TerrainGeneration" type="Node3D" parent="."]
