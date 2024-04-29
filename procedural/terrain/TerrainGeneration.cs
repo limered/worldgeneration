@@ -6,7 +6,7 @@ namespace dla_terrain.procedural.terrain;
 
 public partial class TerrainGeneration : Node
 {
-    private readonly ISampler<DlaSamplerConfig> _sampler = new DlaSampler();
+    private readonly ITerrainSampler<DlaSamplerConfig> _sampler = new DlaSampler();
     private MeshInstance3D _mesh;
     private int _meshResolution = 1;
 
@@ -15,7 +15,6 @@ public partial class TerrainGeneration : Node
     private int _sizeDepth = 50;
     private int _sizeWidth = 50;
 
-    private readonly ITerrainSampler<FastNoiseLite> _terrainSampler = new FastNoiseTerrainSampler();
 
     public override void _Ready()
     {
@@ -56,8 +55,6 @@ public partial class TerrainGeneration : Node
             SubdivideWidth = _sizeWidth * _meshResolution,
         };
         
-        
-        
         var surface = new SurfaceTool();
         var data = new MeshDataTool();
         surface.CreateFrom(planeMesh, 0);
@@ -69,7 +66,7 @@ public partial class TerrainGeneration : Node
         for (var i = 0; i < vertexCount; i++)
         {
             var v = data.GetVertex(i);
-            v.Y = _sampler.SampleTerrainHeight(i, 0);
+            // v.Y = _sampler.SampleTerrainHeight(i, 0);
             data.SetVertex(i, v);
         }
 
@@ -84,10 +81,10 @@ public partial class TerrainGeneration : Node
 
     public override void _Process(double delta)
     {
-        if (_sampler.Update())
-        {
-            var surface = CreateSurface();
-            _mesh.Mesh = surface.Commit();
-        }
+        // if (_sampler.Update())
+        // {
+        //     var surface = CreateSurface();
+        //     _mesh.Mesh = surface.Commit();
+        // }
     }
 }

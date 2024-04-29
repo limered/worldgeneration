@@ -18,7 +18,7 @@ public class DlaTree : List<Vector2I>
     }
 }
 
-public class DlaSampler : ISampler<DlaSamplerConfig>
+public class DlaSampler : ITerrainSampler<DlaSamplerConfig>
 {
     private static Vector2I _center;
     private DlaSamplerConfig _config;
