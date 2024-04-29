@@ -15,6 +15,8 @@ public class DlaTexture
 
     private Image _image;
 
+    private const int StartSize = 64;
+
     public DlaTexture()
     {
         _rnd = new RandomNumberGenerator();
@@ -23,12 +25,12 @@ public class DlaTexture
 
     public ImageTexture Create()
     {
-        _center = new Vector2I(3, 3);
+        _center = new Vector2I(StartSize/2, StartSize/2);
         _tree.Add(_center);
 
         FillTree();
 
-        _image = Image.Create(8, 8, false, Image.Format.Rgbaf);
+        _image = Image.Create(StartSize, StartSize, false, Image.Format.Rgbaf);
         _image.Fill(Colors.Black);
         DrawTree();
 
@@ -37,7 +39,7 @@ public class DlaTexture
 
     private void FillTree()
     {
-        for (var walkerIndex = 0; walkerIndex < 5; walkerIndex++)
+        for (var walkerIndex = 0; walkerIndex < 300; walkerIndex++)
         {
             SpawnNewPoint();
 
@@ -48,8 +50,8 @@ public class DlaTexture
                 var dir = ((Vector2)_center - _walker).Normalized() * (float)0.3;
                 _walker += vel + (Vector2I)dir;
 
-                _walker.X = Math.Clamp(_walker.X, 0, 8);
-                _walker.Y = Math.Clamp(_walker.Y, 0, 8);
+                _walker.X = Math.Clamp(_walker.X, 0, StartSize-1);
+                _walker.Y = Math.Clamp(_walker.Y, 0, StartSize-1);
 
                 stuck = _tree
                     .Select(point => (point - _walker).Length())
@@ -68,10 +70,10 @@ public class DlaTexture
         var direction = _rnd.RandiRange(0, 4);
         _walker = direction switch
         {
-            0 => new Vector2I(0, _rnd.RandiRange(0, 8)),
-            1 => new Vector2I(_rnd.RandiRange(0, 8), 0),
-            2 => new Vector2I(8, _rnd.RandiRange(0, 8)),
-            _ => new Vector2I(_rnd.RandiRange(0, 8), 8)
+            0 => new Vector2I(0, _rnd.RandiRange(0, StartSize-1)),
+            1 => new Vector2I(_rnd.RandiRange(0, StartSize-1), 0),
+            2 => new Vector2I(StartSize-1, _rnd.RandiRange(0, StartSize-1)),
+            _ => new Vector2I(_rnd.RandiRange(0, StartSize-1), StartSize-1)
         };
     }
 
@@ -87,7 +89,7 @@ public class DlaTexture
         for (var i = 0; i < _tree.Count; i++)
         {
             var point = _tree[i];
-            _image.SetPixel(point.X, point.Y, Colors.White);
+            _image.SetPixel(point.X, point.Y, Colors.White - Colors.White/_tree.Count * i);
         }
     }
 }

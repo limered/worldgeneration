@@ -8,7 +8,7 @@ public partial class TerrainGeneration : Node
 {
     private readonly ITerrainSampler<DlaSamplerConfig> _sampler = new DlaSampler();
     private MeshInstance3D _mesh;
-    private int _meshResolution = 3;
+    private int _meshResolution = 4;
 
     [Export] private FastNoiseLite _noise;
     [Export] private ShaderMaterial _mat;

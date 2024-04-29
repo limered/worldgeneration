@@ -29,7 +29,7 @@ shader = ExtResource("2_nh8r2")
 environment = SubResource("Environment_ota5g")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.574601, -0.588907, 0.56835, 0.481645, 0.804769, 0.346936, -0.661704, 0.0743929, 0.746066, 0, 24.288, -17.8632)
+transform = Transform3D(0.66262, -0.0782871, 0.744853, 0, 0.994521, 0.104528, -0.748956, -0.0692626, 0.65899, 0, 24.288, -17.8632)
 shadow_enabled = true
 
 [node name="TerrainGeneration" type="Node3D" parent="."]
@@ -38,5 +38,5 @@ _noise = SubResource("FastNoiseLite_360q3")
 _mat = SubResource("ShaderMaterial_dk8nj")
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.540182, 0.841548, 0, -0.841548, 0.540182, -1.17613, 24.5361, 21.9363)
-fov = 60.0
+transform = Transform3D(1, 0, 0, 0, 0.94263, 0.333839, 0, -0.333839, 0.94263, -1.17613, 12.4301, 28.1767)
+fov = 80.0
