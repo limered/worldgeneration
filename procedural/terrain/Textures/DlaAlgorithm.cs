@@ -14,30 +14,34 @@ public struct DlaPoint
 public class DlaAlgorithm
 {
     private const int BaseSize = 8;
-    private const int LayerCount = 5;
+    private const int LayerCount = 4;
     private const int NewPixelsPerLayer = 7;
+    private readonly Blur2D _blur;
+    private readonly Image _image;
 
-    private readonly Image[] _layers = new Image[LayerCount];
     private readonly RandomNumberGenerator _rnd;
-    private List<DlaPoint> _tree = new();
 
     private DlaPoint _center;
+    private List<DlaPoint> _tree = new();
     private DlaPoint _walker;
-
-    public bool IsGenerating { get; private set; }
 
     public DlaAlgorithm(string seed)
     {
         _rnd = new RandomNumberGenerator();
         if (!string.IsNullOrEmpty(seed)) _rnd.Seed = (ulong)GD.Hash(seed);
+
+        _blur = new Blur2D();
+        _image = Image.Create(BaseSize, BaseSize, false, Image.Format.Rgbaf);
     }
+
+    public bool IsGenerating { get; private set; }
 
     public ImageTexture Create()
     {
         IsGenerating = true;
-        
-        InitLayers();
+
         _tree = new List<DlaPoint>();
+        _image.Fill(Colors.Black);
 
         _center = new DlaPoint
         {
@@ -47,19 +51,22 @@ public class DlaAlgorithm
         _tree.Add(_center);
 
         AddNewPixelsToTree(0);
+        DrawTree();
+        _image.Resize(BaseSize * 2, BaseSize * 2);
+        _blur.BlurImage(_image, new Vector2I(3, 3));
 
-        int i;
-        for (i = 1; i < 5; i++)
+        for (var i = 1; i < LayerCount; i++)
         {
             ExpandTree();
             FillGaps();
             AddNewPixelsToTree(i);
+            DrawTree();
+            _image.Resize(BaseSize * (2 << i), BaseSize * (2 << i));
+            _blur.BlurImage(_image, new Vector2I(5, 5));    
         }
-
-        DrawTree(i - 1);
-
+        
         IsGenerating = false;
-        return ImageTexture.CreateFromImage(_layers[i - 1]);
+        return ImageTexture.CreateFromImage(_image);
     }
 
     private void FillGaps()
@@ -76,13 +83,19 @@ public class DlaAlgorithm
                 if (_tree[j].Position.X == point.Position.X &&
                     _tree[j].Position.Y == point.Position.Y - 2 &&
                     _tree[j].GenerationLayer == point.GenerationLayer)
-                    tempTree.Add(point with { Position = new Vector2I(point.Position.X, point.Position.Y - 1) });
-                
+                    tempTree.Add(point with
+                    {
+                        Position = new Vector2I(point.Position.X, point.Position.Y - 1)
+                    });
+
                 // Check for left connection
                 if (_tree[j].Position.X == point.Position.X - 2 &&
                     _tree[j].Position.Y == point.Position.Y &&
                     _tree[j].GenerationLayer == point.GenerationLayer)
-                    tempTree.Add(point with { Position = new Vector2I(point.Position.X - 1, point.Position.Y) });
+                    tempTree.Add(point with
+                    {
+                        Position = new Vector2I(point.Position.X - 1, point.Position.Y)
+                    });
 
                 j--;
             }
@@ -109,16 +122,6 @@ public class DlaAlgorithm
 
         _center.Position *= 2;
         _tree = tempTree.OrderBy(v => v.Position.X).ThenBy(v => v.Position.Y).ToList();
-    }
-
-    private void InitLayers()
-    {
-        for (var i = 0; i < LayerCount; i++)
-        {
-            var size = i == 0 ? BaseSize : BaseSize * (2 << (i - 1));
-            _layers[i] = Image.Create(size, size, false, Image.Format.Rgbaf);
-            _layers[i].Fill(Colors.Black);
-        }
     }
 
     private void AddNewPixelsToTree(int layerId)
@@ -173,12 +176,12 @@ public class DlaAlgorithm
             _rnd.RandiRange(-1, 1));
     }
 
-    private void DrawTree(int layerId)
+    private void DrawTree()
     {
         for (var i = 0; i < _tree.Count; i++)
         {
             var point = _tree[i];
-            _layers[layerId].SetPixel(point.Position.X, point.Position.Y, Colors.White);
+            _image.SetPixel(point.Position.X, point.Position.Y, Colors.White);
         }
     }
 }

@@ -6,7 +6,7 @@ namespace dla_terrain.Procedural.Terrain;
 public partial class TerrainGeneration : Node
 {
     private MeshInstance3D _mesh;
-    private int _meshResolution = 4;
+    private int _meshResolution = 10;
     private int _sizeDepth = 50;
     private int _sizeWidth = 50;
 

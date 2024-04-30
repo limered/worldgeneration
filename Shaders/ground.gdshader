@@ -6,15 +6,16 @@ uniform sampler2D albedo;
 varying vec2 tex_position;
 
 void vertex() {
-  //VERTEX.y = texture(albedo, UV).x * 10.0;
+  VERTEX.y = texture(albedo, UV).x * 10.0;
 }
 
 void fragment(){
 	float fresnel = sqrt(1.0 - dot(NORMAL, VIEW));
-	RIM = 0.2;
-	METALLIC = 0.0;
-	ROUGHNESS = 0.01 * (1.0 - fresnel);
-	ALBEDO = texture(albedo, UV).xyz + vec3(0.1, 0.3, 0.5) + (0.1 * fresnel);
+	//RIM = 0.2;
+	//METALLIC = 0.0;
+	//ROUGHNESS = 0.01 * (1.0 - fresnel);
+	ALBEDO = texture(albedo, UV).xyz;// + vec3(0.1, 0.3, 0.5) + (0.1 * fresnel);
+	//ALBEDO = vec3(VERTEX) + (0.1 * fresnel);
 	NORMAL = texture(albedo, UV).xyz;
 }
 
