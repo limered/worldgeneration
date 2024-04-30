@@ -5,7 +5,7 @@ using Godot;
 
 namespace dla_terrain.Procedural.Terrain.Textures;
 
-public class DlaTexture
+public class DlaAlgorithm
 {
     private const int StartSize = 8;
     private const int LayerCount = 5;
@@ -18,10 +18,13 @@ public class DlaTexture
     private Vector2I _center;
     private Vector2I _walker;
 
-    public DlaTexture()
+    public DlaAlgorithm(string seed)
     {
         _rnd = new RandomNumberGenerator();
-        // _rnd.Seed = (ulong)GD.Hash("emil");
+        if(!string.IsNullOrEmpty(seed))
+        {
+            _rnd.Seed = (ulong)GD.Hash(seed);
+        }
     }
 
     public ImageTexture Create()
