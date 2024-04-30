@@ -13,7 +13,7 @@ public struct DlaPoint
 
 public class DlaAlgorithm
 {
-    private const int StartSize = 8;
+    private const int BaseSize = 8;
     private const int LayerCount = 5;
     private const int NewPixelsPerLayer = 7;
 
@@ -24,7 +24,7 @@ public class DlaAlgorithm
     private DlaPoint _center;
     private DlaPoint _walker;
 
-    public bool IsGenerating { get; set; }
+    public bool IsGenerating { get; private set; }
 
     public DlaAlgorithm(string seed)
     {
@@ -41,7 +41,7 @@ public class DlaAlgorithm
 
         _center = new DlaPoint
         {
-            Position = new Vector2I(StartSize / 2, StartSize / 2),
+            Position = new Vector2I(BaseSize / 2, BaseSize / 2),
             GenerationLayer = 0
         };
         _tree.Add(_center);
@@ -115,7 +115,7 @@ public class DlaAlgorithm
     {
         for (var i = 0; i < LayerCount; i++)
         {
-            var size = i == 0 ? StartSize : StartSize * (2 << (i - 1));
+            var size = i == 0 ? BaseSize : BaseSize * (2 << (i - 1));
             _layers[i] = Image.Create(size, size, false, Image.Format.Rgbaf);
             _layers[i].Fill(Colors.Black);
         }
@@ -123,7 +123,7 @@ public class DlaAlgorithm
 
     private void AddNewPixelsToTree(int layerId)
     {
-        var border = layerId == 0 ? StartSize : StartSize * (2 << (layerId - 1));
+        var border = layerId == 0 ? BaseSize : BaseSize * (2 << (layerId - 1));
 
         for (var walkerIndex = 0; walkerIndex < NewPixelsPerLayer * (layerId + 1); walkerIndex++)
         {
@@ -153,7 +153,7 @@ public class DlaAlgorithm
 
     private void SpawnNewPoint(int layerId)
     {
-        var border = layerId == 0 ? StartSize : StartSize * (2 << (layerId - 1));
+        var border = layerId == 0 ? BaseSize : BaseSize * (2 << (layerId - 1));
         var direction = _rnd.RandiRange(0, 4);
         _walker = direction switch
         {
