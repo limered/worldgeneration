@@ -24,6 +24,8 @@ public class DlaAlgorithm
     private DlaPoint _center;
     private DlaPoint _walker;
 
+    public bool IsGenerating { get; set; }
+
     public DlaAlgorithm(string seed)
     {
         _rnd = new RandomNumberGenerator();
@@ -32,6 +34,8 @@ public class DlaAlgorithm
 
     public ImageTexture Create()
     {
+        IsGenerating = true;
+        
         InitLayers();
         _tree = new List<DlaPoint>();
 
@@ -54,6 +58,7 @@ public class DlaAlgorithm
 
         DrawTree(i - 1);
 
+        IsGenerating = false;
         return ImageTexture.CreateFromImage(_layers[i - 1]);
     }
 

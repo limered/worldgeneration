@@ -49,6 +49,7 @@ public partial class TerrainGeneration : Node
 
     private void Generate()
     {
+        if (_dla.IsGenerating) return;
         var texture = _dla.Create();
         _mat.SetShaderParameter("albedo", texture);
     }
