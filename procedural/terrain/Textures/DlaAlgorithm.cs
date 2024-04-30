@@ -33,6 +33,7 @@ public class DlaAlgorithm
     public ImageTexture Create()
     {
         InitLayers();
+        _tree = new List<DlaPoint>();
 
         _center = new DlaPoint
         {
