@@ -1,4 +1,3 @@
-using dla_terrain.Procedural.Terrain.Sampler;
 using dla_terrain.Procedural.Terrain.Textures;
 using Godot;
 
@@ -6,73 +5,55 @@ namespace dla_terrain.Procedural.Terrain;
 
 public partial class TerrainGeneration : Node
 {
-    private readonly ITerrainSampler<DlaSamplerConfig> _sampler = new DlaSampler();
     private MeshInstance3D _mesh;
     private int _meshResolution = 4;
-
-    [Export] private FastNoiseLite _noise;
-    [Export] private ShaderMaterial _mat;
     private int _sizeDepth = 50;
     private int _sizeWidth = 50;
 
+    [Export] private string _seed;
+    [Export] private FastNoiseLite _noise;
+    [Export] private ShaderMaterial _mat;
+
+    private DlaAlgorithm _dla;
 
     public override void _Ready()
     {
-        _sampler.Init(new DlaSamplerConfig
-        {
-            Width = _sizeWidth * _meshResolution + 2,
-            Height = _sizeDepth * _meshResolution + 2,
-            Points = 500,
-            Size = 2,
-            MovementIterations = 1000,
-            Noise = _noise
-        });
+        _dla = new DlaAlgorithm(_seed);
+
+        GenerateMesh();
         Generate();
     }
 
-    private void Generate()
-    {
-        var surface = CreateSurface();
-
-        _mesh = new MeshInstance3D();
-        _mesh.Mesh = surface.Commit();
-        // _mesh.CreateTrimeshCollision();
-        _mesh.CastShadow = GeometryInstance3D.ShadowCastingSetting.On;
-        // _mesh.AddToGroup("NavSource");
-
-        _mat.SetShaderParameter("albedo", new DlaTexture().Create());
-        _mesh.MaterialOverride = _mat;
-        
-        AddChild(_mesh);
-    }
-
-    private SurfaceTool CreateSurface()
+    private void GenerateMesh()
     {
         var planeMesh = new PlaneMesh
         {
             Size = new Vector2(_sizeWidth, _sizeDepth),
             SubdivideDepth = _sizeDepth * _meshResolution,
-            SubdivideWidth = _sizeWidth * _meshResolution,
+            SubdivideWidth = _sizeWidth * _meshResolution
         };
-        
+
         var surface = new SurfaceTool();
-        var data = new MeshDataTool();
+        surface.Begin(Mesh.PrimitiveType.Triangles);
         surface.CreateFrom(planeMesh, 0);
 
-        var arrayPlane = surface.Commit();
-        data.CreateFromSurface(arrayPlane, 0);
+        _mesh = new MeshInstance3D
+        {
+            Mesh = surface.Commit(),
+            CastShadow = GeometryInstance3D.ShadowCastingSetting.On,
+            MaterialOverride = _mat
+        };
 
-        arrayPlane.ClearSurfaces();
+        AddChild(_mesh);
+    }
 
-        data.CommitToSurface(arrayPlane);
-        surface.Begin(Mesh.PrimitiveType.Triangles);
-        surface.CreateFrom(arrayPlane, 0);
-        surface.GenerateNormals();
-        return surface;
+    private void Generate()
+    {
+        var texture = _dla.Create();
+        _mat.SetShaderParameter("albedo", texture);
     }
 
     public override void _Process(double delta)
     {
-        
     }
 }
