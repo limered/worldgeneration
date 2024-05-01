@@ -34,6 +34,7 @@ shadow_enabled = true
 
 [node name="TerrainGeneration" type="Node3D" parent="."]
 script = ExtResource("1_1wf2s")
+_seed = "emil"
 _noise = SubResource("FastNoiseLite_360q3")
 _mat = SubResource("ShaderMaterial_dk8nj")
 
