@@ -9,7 +9,7 @@ public class DlaAlgorithm
     private const int LayerCount = 5;
     private const int NewPixelsPerLayer = 10;
     private const float Stickiness = 0.8f;
-    private const float Gravity = 0.1f;
+    private const float Gravity = 0.2f;
     private const float JitterStrength = 0.01f;
 
     private readonly DlaTree _tree;

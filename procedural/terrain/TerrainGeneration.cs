@@ -51,7 +51,7 @@ public partial class TerrainGeneration : Node
     {
         if (_dla.IsGenerating) return;
         var texture = _dla.Create();
-        _mat.SetShaderParameter("albedo", texture);
+        _mat.SetShaderParameter("height_map", texture);
     }
 
     public override void _Process(double delta)

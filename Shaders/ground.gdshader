@@ -1,12 +1,13 @@
 shader_type spatial;
 render_mode diffuse_toon, specular_toon;
 
+uniform sampler2D height_map;
 uniform sampler2D albedo;
 
 varying vec2 tex_position;
 
 void vertex() {
-  VERTEX.y = texture(albedo, UV).x * 5.0;
+  VERTEX.y = texture(height_map, UV).x * 5.0;
 }
 
 void fragment(){
@@ -14,9 +15,10 @@ void fragment(){
 	//RIM = 0.2;
 	//METALLIC = 0.0;
 	//ROUGHNESS = 0.01 * (1.0 - fresnel);
-	ALBEDO = texture(albedo, UV).xyz + vec3(0.1, 0.3, 0.5) + (0.1 * fresnel);
+	float color_x = min(texture(height_map, UV).x + 0.22f, 0.95);
+	ALBEDO = texture(albedo, vec2(color_x, 0.5f)).rgb;// + vec3(0.1, 0.3, 0.5) + (0.1 * fresnel);
 	//ALBEDO = vec3(0.1, 0.3, 0.5) + (0.1 * fresnel);
-	NORMAL = texture(albedo, UV).xyz;
+	NORMAL = texture(height_map, UV).xyz;
 }
 
 //void light() {
