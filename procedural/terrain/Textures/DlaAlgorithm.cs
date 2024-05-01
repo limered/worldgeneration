@@ -7,15 +7,27 @@ namespace dla_terrain.Procedural.Terrain.Textures;
 
 public struct DlaPoint
 {
+    public DlaPoint(Vector2I position) : this()
+    {
+        Position = position;
+        Neighbours = new List<int>(8);
+        Height = 0;
+    }
+
     public Vector2I Position { get; set; }
-    public int GenerationLayer { get; set; }
+    public List<int> Neighbours { get; }
+
+    public int Height { get; set; }
 }
 
 public class DlaAlgorithm
 {
     private const int BaseSize = 8;
-    private const int LayerCount = 4;
-    private const int NewPixelsPerLayer = 7;
+    private const int LayerCount = 5;
+    private const int NewPixelsPerLayer = 10;
+    private const float Stickiness = 0.8f;
+    private const float Gravity = 0.1f;
+    private const float JitterStrength = 0.01f;
     private readonly Blur2D _blur;
     private readonly Image _image;
 
@@ -24,6 +36,7 @@ public class DlaAlgorithm
     private DlaPoint _center;
     private List<DlaPoint> _tree = new();
     private DlaPoint _walker;
+    private int _maxHeight;
 
     public DlaAlgorithm(string seed)
     {
@@ -41,16 +54,14 @@ public class DlaAlgorithm
         IsGenerating = true;
 
         _tree = new List<DlaPoint>();
+        _image.Resize(BaseSize, BaseSize);
         _image.Fill(Colors.Black);
 
-        _center = new DlaPoint
-        {
-            Position = new Vector2I(BaseSize / 2, BaseSize / 2),
-            GenerationLayer = 0
-        };
+        _center = new DlaPoint(new Vector2I(BaseSize / 2, BaseSize / 2));
         _tree.Add(_center);
 
         AddNewPixelsToTree(0);
+        CalculateHeights();
         DrawTree();
         _image.Resize(BaseSize * 2, BaseSize * 2);
         _blur.BlurImage(_image, new Vector2I(3, 3));
@@ -60,68 +71,105 @@ public class DlaAlgorithm
             ExpandTree();
             FillGaps();
             AddNewPixelsToTree(i);
+            CalculateHeights();
             DrawTree();
             _image.Resize(BaseSize * (2 << i), BaseSize * (2 << i));
-            _blur.BlurImage(_image, new Vector2I(5, 5));    
+            _blur.BlurImage(_image, new Vector2I(7, 7));
         }
-        
+
         IsGenerating = false;
         return ImageTexture.CreateFromImage(_image);
     }
 
-    private void FillGaps()
+    private void CalculateHeights()
     {
-        var tempTree = new List<DlaPoint>();
+        // Collect leafs
+        var leafIds = new Queue<int>();
         for (var i = 0; i < _tree.Count; i++)
         {
-            var point = _tree[i];
-            if (i == 0) continue;
-            var j = i - 1;
-            while (j >= 0 && _tree[j].Position.X <= point.Position.X && _tree[j].Position.X >= point.Position.X - 2)
+            if (_tree[i].Neighbours.Count <= 1)
             {
-                // Check for top connection
-                if (_tree[j].Position.X == point.Position.X &&
-                    _tree[j].Position.Y == point.Position.Y - 2 &&
-                    _tree[j].GenerationLayer == point.GenerationLayer)
-                    tempTree.Add(point with
-                    {
-                        Position = new Vector2I(point.Position.X, point.Position.Y - 1)
-                    });
-
-                // Check for left connection
-                if (_tree[j].Position.X == point.Position.X - 2 &&
-                    _tree[j].Position.Y == point.Position.Y &&
-                    _tree[j].GenerationLayer == point.GenerationLayer)
-                    tempTree.Add(point with
-                    {
-                        Position = new Vector2I(point.Position.X - 1, point.Position.Y)
-                    });
-
-                j--;
+                leafIds.Enqueue(i);
             }
         }
 
-        _tree.AddRange(tempTree);
+        _maxHeight = 0;
+        
+        while (leafIds.Any())
+        {
+            var id = leafIds.Dequeue();
+            var point = _tree[id];
+            
+            var height = 1;
+            for (var n = 0; n < point.Neighbours.Count; n++)
+            {
+                if (_tree[point.Neighbours[n]].Height >= height)
+                {
+                    height = _tree[point.Neighbours[n]].Height + 1;
+                }
+                else if (_tree[point.Neighbours[n]].Height == 0)
+                {
+                    leafIds.Enqueue(point.Neighbours[n]);
+                }
+            }
+
+            point.Height = height;
+            _tree[id] = point;
+
+            _maxHeight = Math.Max(_maxHeight, height);
+        }
+    }
+
+    private void FillGaps()
+    {
+        var length = _tree.Count;
+        for (var p = 0; p < length; p++)
+        {
+            var point = _tree[p];
+
+            for (var n = 0; n < point.Neighbours.Count; n++)
+            {
+                var neighbour = _tree[point.Neighbours[n]];
+
+                var jitter = new Vector2(
+                    _rnd.RandfRange(-JitterStrength, JitterStrength), 
+                    _rnd.RandfRange(-JitterStrength, JitterStrength));
+                
+                var direction = (neighbour.Position - point.Position) / 2;
+                var newPoint = new DlaPoint((Vector2I)(point.Position + direction + jitter));
+
+                newPoint.Neighbours.Add(point.Neighbours[n]);
+                newPoint.Neighbours.Add(p);
+
+                var pointIndex = neighbour.Neighbours.IndexOf(p);
+                neighbour.Neighbours[pointIndex] = _tree.Count;
+                _tree[point.Neighbours[n]] = neighbour;
+
+                point.Neighbours[n] = _tree.Count;
+
+                _tree.Add(newPoint);
+            }
+
+            _tree[p] = point;
+        }
     }
 
     private void ExpandTree()
     {
-        var tempTree = new DlaPoint[_tree.Count];
         for (var i = 0; i < _tree.Count; i++)
         {
-            var pixelPosition = _tree[i].Position;
-            // translate
+            var point = _tree[i];
+            point.Height = 0;
+            var pixelPosition = point.Position;
             pixelPosition -= _center.Position;
-            // scale
             pixelPosition *= 2;
-            // translateBack
             pixelPosition += _center.Position * 2;
 
-            tempTree[i].Position = pixelPosition;
+            point.Position = pixelPosition;
+            _tree[i] = point;
         }
 
         _center.Position *= 2;
-        _tree = tempTree.OrderBy(v => v.Position.X).ThenBy(v => v.Position.Y).ToList();
     }
 
     private void AddNewPixelsToTree(int layerId)
@@ -135,21 +183,29 @@ public class DlaAlgorithm
             var stuck = false;
             while (!stuck)
             {
-                var vel = Velocity();
-                var dir = ((Vector2)_center.Position - _walker.Position).Normalized() * (float)0.3;
-                _walker.Position += vel + (Vector2I)dir;
+                // move
+                _walker.Position += Velocity();
 
-                var nextPosition = new Vector2I(Math.Clamp(_walker.Position.X, 0, border - 1),
+                var nextPosition = new Vector2I(
+                    Math.Clamp(_walker.Position.X, 0, border - 1),
                     Math.Clamp(_walker.Position.Y, 0, border - 1));
                 _walker.Position = nextPosition;
 
-                stuck = _tree
-                    .Select(point => (point.Position - _walker.Position).Length())
-                    .Any(dist => dist <= 1.0);
+                // hit check
+                for (var i = 0; i < _tree.Count; i++)
+                {
+                    var point = _tree[i];
+                    if ((point.Position - _walker.Position).Length() > 1.5) continue;
+                    if (_rnd.Randf() > Stickiness) continue;
 
-                if (!stuck) continue;
+                    stuck = true;
 
-                _tree.Add(_walker);
+                    _walker.Neighbours.Add(i);
+                    point.Neighbours.Add(_tree.Count);
+                    _tree[i] = point;
+                    _tree.Add(_walker);
+                    break;
+                }
             }
         }
     }
@@ -160,20 +216,20 @@ public class DlaAlgorithm
         var direction = _rnd.RandiRange(0, 4);
         _walker = direction switch
         {
-            0 => new DlaPoint { Position = new Vector2I(0, _rnd.RandiRange(0, border - 1)), GenerationLayer = layerId },
-            1 => new DlaPoint { Position = new Vector2I(_rnd.RandiRange(0, border - 1), 0), GenerationLayer = layerId },
-            2 => new DlaPoint
-                { Position = new Vector2I(border - 1, _rnd.RandiRange(0, border - 1)), GenerationLayer = layerId },
-            _ => new DlaPoint
-                { Position = new Vector2I(_rnd.RandiRange(0, border - 1), border - 1), GenerationLayer = layerId }
+            0 => new DlaPoint(new Vector2I(0, _rnd.RandiRange(0, border - 1))),
+            1 => new DlaPoint(new Vector2I(_rnd.RandiRange(0, border - 1), 0)),
+            2 => new DlaPoint(new Vector2I(border - 1, _rnd.RandiRange(0, border - 1))),
+            _ => new DlaPoint(new Vector2I(_rnd.RandiRange(0, border - 1), border - 1))
         };
     }
 
     private Vector2I Velocity()
     {
-        return new Vector2I(
+        var rndDirection = new Vector2I(
             _rnd.RandiRange(-1, 1),
             _rnd.RandiRange(-1, 1));
+        var gravity = ((Vector2)_center.Position - _walker.Position).Normalized() * Gravity;
+        return (Vector2I)(rndDirection + gravity);
     }
 
     private void DrawTree()
@@ -181,7 +237,8 @@ public class DlaAlgorithm
         for (var i = 0; i < _tree.Count; i++)
         {
             var point = _tree[i];
-            _image.SetPixel(point.Position.X, point.Position.Y, Colors.White);
+            var col = 1f - 1f / (1f + point.Height);
+            _image.SetPixel(point.Position.X, point.Position.Y, new Color(col, 0, 0));
         }
     }
 }
