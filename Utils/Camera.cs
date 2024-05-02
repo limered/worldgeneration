@@ -13,17 +13,21 @@ public partial class Camera : Node3D
 
     public override void _Input(InputEvent @event)
     {
-        if (@event is InputEventMouseMotion eventMouseMotion) _lastMouseMotion = eventMouseMotion.Relative;
-
-        if (@event is InputEventMouseButton eventMouseButton)
-            switch (eventMouseButton.ButtonIndex)
-            {
-                case MouseButton.Right:
-                    Input.MouseMode = eventMouseButton.Pressed
+        switch (@event)
+        {
+            case InputEventMouseMotion eventMouseMotion:
+                _lastMouseMotion = eventMouseMotion.Relative;
+                break;
+            case InputEventMouseButton eventMouseButton:
+                Input.MouseMode = eventMouseButton.ButtonIndex switch
+                {
+                    MouseButton.Right => eventMouseButton.Pressed
                         ? Input.MouseModeEnum.Captured
-                        : Input.MouseModeEnum.Visible;
-                    break;
-            }
+                        : Input.MouseModeEnum.Visible,
+                    _ => Input.MouseMode
+                };
+                break;
+        }
     }
 
     public override void _Ready()

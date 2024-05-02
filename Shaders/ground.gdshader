@@ -7,7 +7,7 @@ uniform sampler2D albedo;
 varying vec2 tex_position;
 
 void vertex() {
-  VERTEX.y = texture(height_map, UV).x * 5.0;
+  VERTEX.y = texture(height_map, UV).x * 10.0;
 }
 
 void fragment(){
