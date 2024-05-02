@@ -11,6 +11,7 @@ public static class Blur2D
         var halfSize = new Vector2I(kernelSize.X / 2, kernelSize.Y / 2);
         var sizeInv = new Vector2(1f / kernelSize.X, 1f / kernelSize.Y);
         var tempImage = Image.Create(width, height, false, Image.Format.Rgbaf);
+        
         for (var x = 0; x < width; x++)
         for (var y = 0; y < height; y++)
         {
