@@ -12,13 +12,12 @@ public class DlaTree
     private int _baseSize;
 
     private DlaPoint _center;
+
+    private int _clusterRadius;
     private float _gravity;
     private float _jitter;
     private int _newPixelsPerLayer;
     private float _stickiness;
-    private DlaPoint _walker;
-
-    private int _clusterRadius = 0;
 
     public DlaTree(RandomNumberGenerator rnd)
     {
@@ -39,78 +38,65 @@ public class DlaTree
         _stickiness = stickiness;
         _jitter = jitter;
         _newPixelsPerLayer = newPixelsPerLayer;
-        _center = new DlaPoint(new Vector2I(_baseSize / 2, _baseSize / 2));
+        _center = new DlaPoint(new Vector2(_baseSize / 2f, _baseSize / 2f));
 
         Points = new List<DlaPoint> { _center };
     }
 
     public void AddNewPixelsToTree(int layerId)
     {
-        var border = layerId == 0 ? _baseSize : _baseSize * (2 << (layerId - 1));
+        var spawnCount = _newPixelsPerLayer * (layerId + 1);
+        var walkers = new DlaPoint[spawnCount];
+        for (var i = 0; i < walkers.Length; i++) walkers[i] = SpawnNewPointOnRadius(10);
 
-        for (var walkerIndex = 0; walkerIndex < _newPixelsPerLayer * (layerId + 1); walkerIndex++)
-        {
-            // SpawnNewPoint(layerId);
-            SpawnNewPointOnRadius(-10);
-                
-            var stuck = false;
-            while (!stuck)
+        var border = _baseSize * (1 << layerId);
+        var stuckCount = 0;
+        while (stuckCount < spawnCount)
+            for (var w = 0; w < walkers.Length; w++)
             {
-                // move
-                _walker.Position += Velocity();
+                var walker = walkers[w];
+                if (walker.Neighbours.Any()) continue;
 
-                var nextPosition = new Vector2I(
-                    Math.Clamp(_walker.Position.X, 0, border - 1),
-                    Math.Clamp(_walker.Position.Y, 0, border - 1));
-                _walker.Position = nextPosition;
+                walker.Position += Velocity(walker);
+                var nextPosition = new Vector2(
+                    Math.Clamp(walker.Position.X, 0, border - 1),
+                    Math.Clamp(walker.Position.Y, 0, border - 1));
+                walker.Position = nextPosition;
 
-                // hit check
                 for (var i = 0; i < Points.Count; i++)
                 {
                     var point = Points[i];
-                    if ((point.Position - _walker.Position).LengthSquared() > 2.25f) continue;
+                    if ((point.Position - walker.Position).LengthSquared() > 2.25f) continue;
                     if (_rnd.Randf() > _stickiness) continue;
 
-                    stuck = true;
+                    stuckCount++;
 
-                    _walker.Neighbours.Add(i);
+                    walker.Neighbours.Add(i);
                     point.Neighbours.Add(Points.Count);
                     Points[i] = point;
-                    Points.Add(_walker);
+                    Points.Add(walker);
                     break;
                 }
+
+                walkers[w] = walker;
             }
-        }
     }
-    
-    private void SpawnNewPoint(int layerId)
-    {
-        var border = layerId == 0 ? _baseSize : _baseSize * (2 << (layerId - 1));
-        var direction = _rnd.RandiRange(0, 4);
-        _walker = direction switch
-        {
-            0 => new DlaPoint(new Vector2I(0, _rnd.RandiRange(0, border - 1))),
-            1 => new DlaPoint(new Vector2I(_rnd.RandiRange(0, border - 1), 0)),
-            2 => new DlaPoint(new Vector2I(border - 1, _rnd.RandiRange(0, border - 1))),
-            _ => new DlaPoint(new Vector2I(_rnd.RandiRange(0, border - 1), border - 1))
-        };
-    }
-    
-    private void SpawnNewPointOnRadius(int padding)
+
+    private DlaPoint SpawnNewPointOnRadius(int padding)
     {
         var rot = _rnd.RandfRange(0, 360);
         var x = (_clusterRadius + padding) * Math.Cos(rot);
         var y = (_clusterRadius + padding) * Math.Sin(rot);
-        _walker = new DlaPoint(new Vector2I((int)x, (int)y) + _center.Position);
+        return new DlaPoint(new Vector2((int)x, (int)y) + _center.Position);
     }
-    
-    private Vector2I Velocity()
+
+    private Vector2 Velocity(DlaPoint walker)
     {
         var rndDirection = new Vector2I(
             _rnd.RandiRange(-1, 1),
             _rnd.RandiRange(-1, 1));
-        var gravity = ((Vector2)_center.Position - _walker.Position) * _gravity;
-        return (Vector2I)(rndDirection + gravity);
+        var gravity = (_center.Position - walker.Position).Normalized() * _gravity;
+        return rndDirection + gravity;
     }
 
     public void ExpandTree()
@@ -132,11 +118,10 @@ public class DlaTree
         _center.Position *= 2;
     }
 
-    private void CalculateClusterRadius(Vector2I pixelPosition)
+    private void CalculateClusterRadius(Vector2 pixelPosition)
     {
-        _clusterRadius = Math.Max(
-            _clusterRadius, 
-            Math.Max(pixelPosition.X, pixelPosition.Y));
+        var radius = (_center.Position - pixelPosition).Length();
+        _clusterRadius = (int)Math.Max(_clusterRadius, radius);
     }
 
     public void FillGaps()
@@ -155,7 +140,7 @@ public class DlaTree
                     _rnd.RandfRange(-_jitter, _jitter));
 
                 var direction = (neighbour.Position - point.Position) / 2;
-                var newPoint = new DlaPoint((Vector2I)(point.Position + direction + jitter));
+                var newPoint = new DlaPoint(point.Position + direction + jitter);
 
                 newPoint.Neighbours.Add(point.Neighbours[n]);
                 newPoint.Neighbours.Add(p);
@@ -192,7 +177,8 @@ public class DlaTree
             for (var n = 0; n < point.Neighbours.Count; n++)
                 if (Points[point.Neighbours[n]].Height >= height)
                     height = Points[point.Neighbours[n]].Height + 1;
-                else if (Points[point.Neighbours[n]].Height == 0) leafIds.Enqueue(point.Neighbours[n]);
+                else if (Points[point.Neighbours[n]].Height == 0)
+                    leafIds.Enqueue(point.Neighbours[n]);
 
             point.Height = height;
             Points[id] = point;
@@ -206,14 +192,14 @@ public class DlaTree
 
 public struct DlaPoint
 {
-    public DlaPoint(Vector2I position) : this()
+    public DlaPoint(Vector2 position) : this()
     {
         Position = position;
         Neighbours = new List<int>(8);
         Height = 0;
     }
 
-    public Vector2I Position { get; set; }
+    public Vector2 Position { get; set; }
     public List<int> Neighbours { get; }
     public int Height { get; set; }
 }
