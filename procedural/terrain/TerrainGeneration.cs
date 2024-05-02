@@ -21,7 +21,7 @@ public partial class TerrainGeneration : Node
         _dla = new DlaAlgorithm(_seed);
 
         GenerateMesh();
-        Generate();
+        GenerateHeightMap();
     }
 
     private void GenerateMesh()
@@ -47,7 +47,7 @@ public partial class TerrainGeneration : Node
         AddChild(_mesh);
     }
 
-    private void Generate()
+    private void GenerateHeightMap()
     {
         if (_dla.IsGenerating) return;
         var texture = _dla.Create();
@@ -63,7 +63,7 @@ public partial class TerrainGeneration : Node
     {
         if (@event.IsActionPressed("generate"))
         {
-            Generate();
+            GenerateHeightMap();
         }
     }
 }
