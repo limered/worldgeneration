@@ -90,6 +90,12 @@ public class DlaTree
         return new DlaPoint(new Vector2((int)x, (int)y) + _center.Position);
     }
 
+    private Vector2 Velocity2(DlaPoint walker)
+    {
+        var targetIndex = _rnd.RandiRange(0, Points.Count-1);
+        return (Points[targetIndex].Position - walker.Position).Normalized() * _gravity;
+    }
+    
     private Vector2 Velocity(DlaPoint walker)
     {
         var rndDirection = new Vector2(

@@ -8,8 +8,8 @@ public class DlaAlgorithm
 {
     private const int BaseSize = 8;
     private const int LayerCount = 5;
-    private const int NewPixelsPerLayer = 7;
-    private const float Stickiness = 0.8f;
+    private const int NewPixelsPerLayer = 10;
+    private const float Stickiness = 0.3f;
     private const float Gravity = 0.3f;
     private const float JitterStrength = 2.5f;
     private readonly Image _image;
@@ -103,6 +103,7 @@ public class DlaAlgorithm
                 point.Position.X < 0 ||
                 point.Position.Y >= height ||
                 point.Position.Y < 0) continue;
+            
             var col = 1f - 1f / (1f + point.Height);
             _image.SetPixel((int)point.Position.X, (int)point.Position.Y, new Color(col, 0, 0));
         }
