@@ -59,8 +59,8 @@ public class DlaTree
 
                 walker.Position += Velocity(walker);
                 var nextPosition = new Vector2(
-                    Math.Clamp(walker.Position.X, 0, border - 1),
-                    Math.Clamp(walker.Position.Y, 0, border - 1));
+                    Math.Clamp(walker.Position.X, 1, border - 2),
+                    Math.Clamp(walker.Position.Y, 1, border - 2));
                 walker.Position = nextPosition;
 
                 for (var i = 0; i < Points.Count; i++)
@@ -92,7 +92,7 @@ public class DlaTree
 
     private Vector2 Velocity(DlaPoint walker)
     {
-        var rndDirection = new Vector2I(
+        var rndDirection = new Vector2(
             _rnd.RandiRange(-1, 1),
             _rnd.RandiRange(-1, 1));
         var gravity = (_center.Position - walker.Position).Normalized() * _gravity;
@@ -139,8 +139,9 @@ public class DlaTree
                     _rnd.RandfRange(-_jitter, _jitter),
                     _rnd.RandfRange(-_jitter, _jitter));
 
-                var direction = (neighbour.Position - point.Position) / 2;
-                var newPoint = new DlaPoint(point.Position + direction + jitter);
+                var direction = (neighbour.Position - point.Position) * 0.5f;
+                var newPosition = point.Position + direction + jitter;
+                var newPoint = new DlaPoint(newPosition);
 
                 newPoint.Neighbours.Add(point.Neighbours[n]);
                 newPoint.Neighbours.Add(p);
