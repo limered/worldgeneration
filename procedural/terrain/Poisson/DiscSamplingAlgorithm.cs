@@ -9,7 +9,7 @@ public class DiscSamplingAlgorithm
 {
     private const int Resolution = 1024;
     private const int HalfResolution = Resolution / 2;
-    private const int R = 20;
+    private const int R = 30;
     private const int R2 = R * 2;
     private const int K = 30;
     private readonly Vector2 _empty = new(-1, -1);
