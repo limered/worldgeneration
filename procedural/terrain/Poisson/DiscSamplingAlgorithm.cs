@@ -90,7 +90,7 @@ public class DiscSamplingAlgorithm
             var found = false;
             for (var k = 0; k < K; k++)
             {
-                var theta = _rnd.RandfRange(0, Mathf.Tau);
+                var theta = _rnd.RandfRange(0f, (float)Math.Tau);
                 var dir = new Vector2(Mathf.Cos(theta), Mathf.Sin(theta));
                 dir *= _rnd.RandfRange(R, R2);
                 var sample = dir + xI;
@@ -98,14 +98,11 @@ public class DiscSamplingAlgorithm
                 if (sampleCellIndex >= _grid.Length ||
                     sampleCellIndex < 0 ||
                     _grid[sampleCellIndex] != _empty) continue;
-                
+
                 var neighbours = Neighbours(ToCell(sample));
                 var ok = true;
                 var n = 0;
-                while (ok && n < 8)
-                {
-                    ok &= (sample - neighbours[n++]).Length() >= R;
-                }
+                while (ok && n < 8) ok &= (sample - neighbours[n++]).Length() >= R;
 
                 if (!ok) continue;
                 found = true;
@@ -117,12 +114,10 @@ public class DiscSamplingAlgorithm
         }
 
         foreach (var point in _grid)
-        {
             if (point != _empty &&
                 point.X is < Resolution and >= 0 &&
                 point.Y is < Resolution and >= 0)
                 _image.SetPixel((int)point.X, (int)point.Y, Color.Color8(255, 255, 255));
-        }
 
         IsGenerating = false;
         return ImageTexture.CreateFromImage(_image);

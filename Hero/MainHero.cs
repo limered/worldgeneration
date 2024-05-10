@@ -30,6 +30,8 @@ public partial class MainHero : Node3D
         Position += (tempVelocity + _velocity) * 0.5f * (float)delta;
         _velocity = tempVelocity * _drag;
         
+        
+        
         _acceleration = Vector3.Zero;
     }
 }
