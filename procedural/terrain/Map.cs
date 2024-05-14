@@ -7,18 +7,18 @@ namespace dla_terrain.Procedural.Terrain;
 
 public class Map
 {
-    private readonly List<ChunkCell> _chunks;
-    private readonly MapInitialization _mapData;
+    private readonly List<Landmark> _chunks;
     private readonly int _gridSize;
+    private readonly MapInitialization _mapData;
     private readonly RandomNumberGenerator _rnd;
 
     private List<int> _activeList;
-    
+
     public Map(MapInitialization mapData)
     {
         _mapData = mapData;
-        _gridSize = (int)(_mapData.R / Mathf.Sqrt(2)); 
-        _chunks = new List<ChunkCell>(_mapData.MaxChunksCount);
+        _gridSize = (int)(_mapData.R / Mathf.Sqrt(2));
+        _chunks = new List<Landmark>(_mapData.MaxChunksCount);
         _rnd = new RandomNumberGenerator();
         _rnd.Seed = (ulong)_mapData.MasterSeed;
     }
@@ -27,19 +27,14 @@ public class Map
     {
         return new Vector2I((int)(v.X / _gridSize), (int)(v.Z / _gridSize));
     }
-    
+
     public void GenerateInitialChunks()
     {
         _activeList = new List<int>();
-        _chunks.Add(new ChunkCell(
-            new Vector2I(0,0),
+        _chunks.Add(new Landmark(
+            new Vector2I(0, 0),
             new Vector3(0, 0, 0),
-            _mapData.MasterSeed,
-            _gridSize,
-            _mapData.R,
-            _mapData.R2,
-            _mapData.K
-            ));
+            _gridSize));
         _activeList.Add(0);
 
         while (_activeList.Any())
@@ -54,30 +49,26 @@ public class Map
                 dir *= _rnd.RandfRange(_mapData.R, _mapData.R2);
                 var sample = dir + xi.CenterPoint;
                 var sampleCellIndex = ToCell(sample);
-                if(Math.Abs(sampleCellIndex.X) > _mapData.InitialRings ||
-                   Math.Abs(sampleCellIndex.Y) > _mapData.InitialRings ||
-                   FindCell(sampleCellIndex) != null) continue;
+                if (Math.Abs(sampleCellIndex.X) > _mapData.InitialRings ||
+                    Math.Abs(sampleCellIndex.Y) > _mapData.InitialRings ||
+                    FindCell(sampleCellIndex) != null) continue;
 
                 var neighbours = NeighbourCenters(sampleCellIndex);
                 var ok = true;
                 var n = 0;
                 while (ok && n < neighbours.Length) ok &= (sample - neighbours[n++]).Length() >= _mapData.R;
-                
-                if(!ok) continue;
+
+                if (!ok) continue;
                 found = true;
                 _activeList.Add(_chunks.Count);
-                _chunks.Add(new ChunkCell(
-                        sampleCellIndex,
-                        sample,
-                        _mapData.MasterSeed,
-                        _gridSize,
-                        _mapData.R,
-                        _mapData.R2,
-                        _mapData.K)
-                    );
+                _chunks.Add(new Landmark(
+                    sampleCellIndex,
+                    sample,
+                    _gridSize)
+                );
             }
-            
-            if(!found) _activeList.RemoveAt(i);
+
+            if (!found) _activeList.RemoveAt(i);
         }
     }
 
@@ -99,13 +90,13 @@ public class Map
             .ToArray();
     }
 
-    private ChunkCell FindCell(Vector2I index)
+    private Landmark FindCell(Vector2I index)
     {
         return _chunks
             .Where(c => c != null)
             .FirstOrDefault(c => c.CellIndex == index);
     }
-    
+
     public void Update(Node3D parent)
     {
         foreach (var chunk in _chunks)

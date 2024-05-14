@@ -2,23 +2,12 @@
 
 namespace dla_terrain.Procedural.Terrain;
 
-public class ChunkCell
+public class Landmark
 {
-    private readonly int _cellSize;
-    private readonly int _masterSeed;
-
-    private readonly RandomNumberGenerator _rnd = new();
-
-    public ChunkCell(Vector2I cellIndex,
+    public Landmark(Vector2I cellIndex,
         Vector3 centerPoint,
-        int masterSeed,
-        int cellSize,
-        int r,
-        int r2,
-        int k)
+        int cellSize)
     {
-        _cellSize = cellSize;
-        _masterSeed = GD.Hash(masterSeed);
         CellIndex = cellIndex;
         Coordinate = CellIndex * cellSize;
         CenterPoint = centerPoint;
