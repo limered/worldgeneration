@@ -2,8 +2,10 @@
 
 public readonly record struct MapInitialization(
     int MasterSeed,
-    int InitialChunkCount,
+    int InitialRings,
     int MaxChunksCount,
-    int CellSize)
+    int R,
+    int R2,
+    int K)
 {
 }

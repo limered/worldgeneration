@@ -1,7 +1,5 @@
-using System.Diagnostics;
 using dla_terrain.Procedural.Terrain.Poisson;
 using dla_terrain.Procedural.Terrain.Textures;
-using dla_terrain.Utils.Random;
 using Godot;
 
 namespace dla_terrain.Procedural.Terrain;
