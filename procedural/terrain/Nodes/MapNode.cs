@@ -15,6 +15,7 @@ public partial class MapNode : Node3D
     private SystemCollection _systems;
 
     private Map _map;
+    
     public override void _Ready()
     {
         _systems = GetNode<SystemCollection>("/root/Systems");

@@ -14,10 +14,12 @@ public class Map
 
     private List<int> _activeList;
 
+    private Vector2I _lastHeroCell;
+
     public Map(MapInitialization mapData)
     {
         _mapData = mapData;
-        _gridSize = (int)(_mapData.R / Mathf.Sqrt(2));
+        _gridSize = (int)(_mapData.R * Math.Sqrt(2));
         _chunks = new List<Landmark>(_mapData.MaxChunksCount);
         _rnd = new RandomNumberGenerator();
         _rnd.Seed = (ulong)_mapData.MasterSeed;
@@ -47,7 +49,7 @@ public class Map
                 var theta = _rnd.RandfRange(0f, (float)Math.Tau);
                 var dir = new Vector3(Mathf.Cos(theta), 0, Mathf.Sin(theta));
                 dir *= _rnd.RandfRange(_mapData.R, _mapData.R2);
-                var sample = dir + xi.CenterPoint;
+                var sample = dir + xi.LandmarkPosition;
                 var sampleCellIndex = ToCell(sample);
                 if (Math.Abs(sampleCellIndex.X) > _mapData.InitialRings ||
                     Math.Abs(sampleCellIndex.Y) > _mapData.InitialRings ||
@@ -56,7 +58,8 @@ public class Map
                 var neighbours = NeighbourCenters(sampleCellIndex);
                 var ok = true;
                 var n = 0;
-                while (ok && n < neighbours.Length) ok &= (sample - neighbours[n++]).Length() >= _mapData.R;
+                while (ok && n < neighbours.Length)
+                    ok &= (sample - neighbours[n++]).LengthSquared() >= _mapData.R * _mapData.R;
 
                 if (!ok) continue;
                 found = true;
@@ -86,7 +89,7 @@ public class Map
                 FindCell(new Vector2I(+1, +1) + c)
             }
             .Where(chunk => chunk != null)
-            .Select(chunk => chunk.CenterPoint)
+            .Select(chunk => chunk.LandmarkPosition)
             .ToArray();
     }
 
@@ -99,6 +102,14 @@ public class Map
 
     public void Update(Node3D parent, Vector3 heroPosition)
     {
+        var heroCell = ToCell(heroPosition);
+        if (heroCell != _lastHeroCell)
+            // TODO calculate new landmarks and delete old ones
+        {
+            GD.Print(heroCell);
+            _lastHeroCell = heroCell;
+        }
+
         foreach (var chunk in _chunks)
         {
             if (chunk is null or { IsRendered: true }) continue;
@@ -106,7 +117,9 @@ public class Map
             var chunkScene = GD.Load<PackedScene>("res://Scenes/chunk_center.tscn");
             var sceneInstance = chunkScene.Instantiate<Node3D>();
             parent.AddChild(sceneInstance);
-            sceneInstance.Translate(chunk.CenterPoint);
+            // sceneInstance.Position = new Vector3(chunk.Coordinate.X, 0, chunk.Coordinate.Y);
+            sceneInstance.Position = chunk.LandmarkPosition;
+            // GD.Print(chunk.LandmarkPosition + " , " + chunk.CellIndex);
         }
     }
 }

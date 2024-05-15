@@ -29,8 +29,8 @@ shadow_enabled = true
 
 [node name="TerrainGeneration" type="Node3D" parent="."]
 script = ExtResource("1_f70bo")
-_pointDistanceRadius = 50
-_initialRings = 10
+_pointDistanceRadius = 2
+_initialRings = 5
 _maxChunkCount = 405
 
 [node name="Camera3D" type="Camera3D" parent="."]
@@ -38,7 +38,6 @@ transform = Transform3D(1, 0, 0, 0, 0.5, 0.866025, 0, -0.866025, 0.5, 0, 29, 22)
 fov = 80.0
 
 [node name="Player" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.21135, 0.192089)
 script = ExtResource("5_k1ane")
 _speed = 60.0
 _drag = 0.92
