@@ -1,4 +1,5 @@
-﻿using Godot;
+﻿using dla_terrain.SystemBase;
+using Godot;
 
 namespace dla_terrain.Hero;
 
@@ -10,9 +11,18 @@ public partial class MainHero : Node3D
     private Vector3 _velocity;
     private Vector3 _acceleration;
 
+    private SystemCollection _systems;
+
+    public override void _Ready()
+    {
+        _systems = GetNode<SystemCollection>("/root/Systems");
+    }
+
     public override void _Process(double delta)
     {
         UpdateMovement(delta);
+
+        _systems.System<HeroSystem>().HeroPosition = Position;
     }
 
     private void UpdateMovement(double delta)

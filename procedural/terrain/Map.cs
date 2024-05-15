@@ -97,7 +97,7 @@ public class Map
             .FirstOrDefault(c => c.CellIndex == index);
     }
 
-    public void Update(Node3D parent)
+    public void Update(Node3D parent, Vector3 heroPosition)
     {
         foreach (var chunk in _chunks)
         {

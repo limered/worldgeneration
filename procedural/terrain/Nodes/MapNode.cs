@@ -1,4 +1,6 @@
-﻿using Godot;
+﻿using dla_terrain.Hero;
+using dla_terrain.SystemBase;
+using Godot;
 
 namespace dla_terrain.Procedural.Terrain.Nodes;
 
@@ -10,9 +12,13 @@ public partial class MapNode : Node3D
     [Export] private int _initialRings;
     [Export] private int _maxChunkCount;
 
+    private SystemCollection _systems;
+
     private Map _map;
     public override void _Ready()
     {
+        _systems = GetNode<SystemCollection>("/root/Systems");
+        
         _map = new Map(new MapInitialization(
             GD.Hash(_masterSeed),
             _initialRings,
@@ -26,6 +32,7 @@ public partial class MapNode : Node3D
 
     public override void _Process(double delta)
     {
-        _map.Update(this);
+        var heroPosition = _systems.System<HeroSystem>().HeroPosition;
+        _map.Update(this, heroPosition);
     }
 }
