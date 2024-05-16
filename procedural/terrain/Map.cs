@@ -104,8 +104,8 @@ public class Map
     {
         var heroCell = ToCell(heroPosition);
         if (heroCell != _lastHeroCell)
-            // TODO calculate new landmarks and delete old ones
         {
+            // TODO calculate new landmarks and delete old ones
             GD.Print(heroCell);
             _lastHeroCell = heroCell;
         }
