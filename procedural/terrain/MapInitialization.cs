@@ -2,7 +2,7 @@
 
 public readonly record struct MapInitialization(
     int MasterSeed,
-    int InitialRings,
+    int LandmarkDistance,
     int MaxChunksCount,
     int R,
     int R2,

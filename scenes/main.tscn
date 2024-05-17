@@ -29,8 +29,8 @@ shadow_enabled = true
 
 [node name="TerrainGeneration" type="Node3D" parent="."]
 script = ExtResource("1_f70bo")
-_pointDistanceRadius = 2
-_initialRings = 4
+_pointDistanceRadius = 5
+_initialRings = 10
 _maxChunkCount = 405
 
 [node name="Camera3D" type="Camera3D" parent="."]

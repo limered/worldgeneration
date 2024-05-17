@@ -7,7 +7,7 @@ namespace dla_terrain.Procedural.Terrain;
 
 public class Map
 {
-    private readonly List<Landmark> _chunks;
+    private readonly List<Landmark> _landmarks;
     private readonly int _gridSize;
     private readonly MapInitialization _mapData;
     private readonly RandomNumberGenerator _rnd;
@@ -15,14 +15,17 @@ public class Map
     private List<int> _activeList;
 
     private Vector2I _lastHeroCell;
+    private PackedScene _landmarkScene;
 
     public Map(MapInitialization mapData)
     {
         _mapData = mapData;
         _gridSize = (int)(_mapData.R * Math.Sqrt(2));
-        _chunks = new List<Landmark>(_mapData.MaxChunksCount);
+        _landmarks = new List<Landmark>(_mapData.MaxChunksCount);
         _rnd = new RandomNumberGenerator();
         _rnd.Seed = (ulong)_mapData.MasterSeed;
+        
+        _landmarkScene = GD.Load<PackedScene>("res://Scenes/chunk_center.tscn");
     }
 
     private Vector2I ToCell(Vector3 v)
@@ -30,19 +33,12 @@ public class Map
         return new Vector2I((int)(v.X / _gridSize), (int)(v.Z / _gridSize));
     }
 
-    public void GenerateInitialChunks()
+    private void GenerateLandmarks(Vector2I generateAroundIndex)
     {
-        _activeList = new List<int>();
-        _chunks.Add(new Landmark(
-            new Vector2I(0, 0),
-            new Vector3(0, 0, 0),
-            _gridSize));
-        _activeList.Add(0);
-
         while (_activeList.Any())
         {
             var i = _rnd.RandiRange(0, _activeList.Count - 1);
-            var xi = _chunks[_activeList[i]];
+            var xi = _landmarks[_activeList[i]];
             var found = false;
             for (var k = 0; k < _mapData.K; k++)
             {
@@ -51,8 +47,7 @@ public class Map
                 dir *= _rnd.RandfRange(_mapData.R, _mapData.R2);
                 var sample = dir + xi.LandmarkPosition;
                 var sampleCellIndex = ToCell(sample);
-                if (Math.Abs(sampleCellIndex.X) > _mapData.InitialRings ||
-                    Math.Abs(sampleCellIndex.Y) > _mapData.InitialRings ||
+                if ((sampleCellIndex - generateAroundIndex).LengthSquared() > _mapData.LandmarkDistance * _mapData.LandmarkDistance ||
                     FindCell(sampleCellIndex) != null) continue;
 
                 var neighbours = NeighbourCenters(sampleCellIndex);
@@ -63,8 +58,8 @@ public class Map
 
                 if (!ok) continue;
                 found = true;
-                _activeList.Add(_chunks.Count);
-                _chunks.Add(new Landmark(
+                _activeList.Add(_landmarks.Count);
+                _landmarks.Add(new Landmark(
                     sampleCellIndex,
                     sample,
                     _gridSize)
@@ -73,6 +68,18 @@ public class Map
 
             if (!found) _activeList.RemoveAt(i);
         }
+    }
+    
+    public void GenerateInitialChunks()
+    {
+        _activeList = new List<int>();
+        _landmarks.Add(new Landmark(
+            new Vector2I(0, 0),
+            new Vector3(0, 0, 0),
+            _gridSize));
+        _activeList.Add(0);
+
+        GenerateLandmarks(new Vector2I(0, 0));
     }
 
     private Vector3[] NeighbourCenters(Vector2I c)
@@ -95,7 +102,7 @@ public class Map
 
     private Landmark FindCell(Vector2I index)
     {
-        return _chunks
+        return _landmarks
             .Where(c => c != null)
             .FirstOrDefault(c => c.CellIndex == index);
     }
@@ -105,20 +112,49 @@ public class Map
         var heroCell = ToCell(heroPosition);
         if (heroCell != _lastHeroCell)
         {
-            // TODO calculate new landmarks and delete old ones
-            GD.Print(heroCell);
+            var deleteList = new List<int>();
+            for (var l = 0; l < _landmarks.Count; l++)
+            {
+                var landmark = _landmarks[l];
+                var distanceSquared = (landmark.CellIndex - _lastHeroCell).LengthSquared();
+                var max = _mapData.LandmarkDistance * _mapData.LandmarkDistance;
+                var min = (_mapData.LandmarkDistance - 1) * (_mapData.LandmarkDistance - 1);
+                if (distanceSquared > min && distanceSquared < max)
+                {
+                    _activeList.Add(l);
+                }
+                var distanceToDelete = (landmark.CellIndex - heroCell).LengthSquared();
+                if (distanceToDelete >= max)
+                {
+                    deleteList.Add(l);
+                }
+            }
+            
+            GenerateLandmarks(heroCell);
+
+            var ordered = deleteList.OrderByDescending(i => i);
+            foreach (var i in ordered)
+            {
+                _landmarks.RemoveAt(i);
+            }            
+                        
             _lastHeroCell = heroCell;
         }
 
-        foreach (var chunk in _chunks)
+        var children = parent.GetChildren();
+        for (var i = children.Count - 1; i >= 0; i--)
         {
-            if (chunk is null or { IsRendered: true }) continue;
-            chunk.IsRendered = true;
-            var chunkScene = GD.Load<PackedScene>("res://Scenes/chunk_center.tscn");
-            var sceneInstance = chunkScene.Instantiate<Node3D>();
+            children[i].Free();
+        }
+        
+        foreach (var landmark in _landmarks)
+        {
+            if (landmark is null or { IsRendered: true }) continue;
+            // landmark.IsRendered = true;
+            var sceneInstance = _landmarkScene.Instantiate<Node3D>();
+            // sceneInstance.Position = new Vector3(landmark.Coordinate.X, 0, landmark.Coordinate.Y);
+            sceneInstance.Position = landmark.LandmarkPosition;
             parent.AddChild(sceneInstance);
-            // sceneInstance.Position = new Vector3(chunk.Coordinate.X, 0, chunk.Coordinate.Y);
-            sceneInstance.Position = chunk.LandmarkPosition;
             // GD.Print(chunk.LandmarkPosition + " , " + chunk.CellIndex);
         }
     }
