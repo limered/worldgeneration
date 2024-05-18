@@ -7,24 +7,23 @@ namespace dla_terrain.Procedural.Terrain;
 
 public class Map
 {
-    private readonly List<Landmark> _landmarks;
+    private readonly LandmarkCache _cache;
     private readonly int _gridSize;
+    private readonly List<Landmark> _landmarks;
+    private readonly PackedScene _landmarkScene;
     private readonly MapInitialization _mapData;
-    private readonly RandomNumberGenerator _rnd;
 
-    private List<int> _activeList;
+    private Queue<int> _activeQueue;
 
     private Vector2I _lastHeroCell;
-    private PackedScene _landmarkScene;
 
     public Map(MapInitialization mapData)
     {
         _mapData = mapData;
         _gridSize = (int)(_mapData.R * Math.Sqrt(2));
         _landmarks = new List<Landmark>(_mapData.MaxChunksCount);
-        _rnd = new RandomNumberGenerator();
-        _rnd.Seed = (ulong)_mapData.MasterSeed;
-        
+        _cache = new LandmarkCache();
+
         _landmarkScene = GD.Load<PackedScene>("res://Scenes/chunk_center.tscn");
     }
 
@@ -33,71 +32,58 @@ public class Map
         return new Vector2I((int)(v.X / _gridSize), (int)(v.Z / _gridSize));
     }
 
-    private void GenerateLandmarks(Vector2I generateAroundIndex)
+    public void GenerateInitial()
     {
-        while (_activeList.Any())
-        {
-            var i = _rnd.RandiRange(0, _activeList.Count - 1);
-            var xi = _landmarks[_activeList[i]];
-            var found = false;
-            for (var k = 0; k < _mapData.K; k++)
-            {
-                var theta = _rnd.RandfRange(0f, (float)Math.Tau);
-                var dir = new Vector3(Mathf.Cos(theta), 0, Mathf.Sin(theta));
-                dir *= _rnd.RandfRange(_mapData.R, _mapData.R2);
-                var sample = dir + xi.LandmarkPosition;
-                var sampleCellIndex = ToCell(sample);
-                if ((sampleCellIndex - generateAroundIndex).LengthSquared() > _mapData.LandmarkDistance * _mapData.LandmarkDistance ||
-                    FindCell(sampleCellIndex) != null) continue;
-
-                var neighbours = NeighbourCenters(sampleCellIndex);
-                var ok = true;
-                var n = 0;
-                while (ok && n < neighbours.Length)
-                    ok &= (sample - neighbours[n++]).LengthSquared() >= _mapData.R * _mapData.R;
-
-                if (!ok) continue;
-                found = true;
-                _activeList.Add(_landmarks.Count);
-                _landmarks.Add(new Landmark(
-                    sampleCellIndex,
-                    sample,
-                    _gridSize)
-                );
-            }
-
-            if (!found) _activeList.RemoveAt(i);
-        }
-    }
-    
-    public void GenerateInitialChunks()
-    {
-        _activeList = new List<int>();
+        _activeQueue = new Queue<int>();
         _landmarks.Add(new Landmark(
             new Vector2I(0, 0),
             new Vector3(0, 0, 0),
-            _gridSize));
-        _activeList.Add(0);
+            _gridSize,
+            _mapData.MasterSeed));
+        _activeQueue.Enqueue(0);
 
-        GenerateLandmarks(new Vector2I(0, 0));
+        GenerateLandmarksCellBased(new Vector2I(0, 0));
     }
 
-    private Vector3[] NeighbourCenters(Vector2I c)
+    private void GenerateLandmarksCellBased(Vector2I generateAroundIndex)
+    {
+        while (_activeQueue.Any())
+        {
+            var i = _activeQueue.Dequeue();
+            var ix = _landmarks[i];
+            var neighbourCoordinates = NeighbourCoordinates(ix.CellIndex);
+            for (var n = 0; n < neighbourCoordinates.Length; n++)
+            {
+                if ((neighbourCoordinates[n] - generateAroundIndex).LengthSquared() >
+                    _mapData.LandmarkDistance * _mapData.LandmarkDistance) continue;
+                var neighbour = FindCell(neighbourCoordinates[n]);
+                if (neighbour != null) continue;
+                _activeQueue.Enqueue(_landmarks.Count);
+                if (_cache.Contains(neighbourCoordinates[n]))
+                    _landmarks.Add(_cache.Retrieve(neighbourCoordinates[n]));
+                else
+                    _landmarks.Add(new Landmark(
+                        neighbourCoordinates[n],
+                        Vector3.Zero,
+                        _gridSize,
+                        _mapData.MasterSeed));
+            }
+        }
+    }
+
+    private static Vector2I[] NeighbourCoordinates(Vector2I c)
     {
         return new[]
-            {
-                FindCell(new Vector2I(-1, -1) + c),
-                FindCell(new Vector2I(-1, 0) + c),
-                FindCell(new Vector2I(-1, +1) + c),
-                FindCell(new Vector2I(0, -1) + c),
-                FindCell(new Vector2I(0, +1) + c),
-                FindCell(new Vector2I(+1, -1) + c),
-                FindCell(new Vector2I(+1, 0) + c),
-                FindCell(new Vector2I(+1, +1) + c)
-            }
-            .Where(chunk => chunk != null)
-            .Select(chunk => chunk.LandmarkPosition)
-            .ToArray();
+        {
+            new Vector2I(-1, -1) + c,
+            new Vector2I(-1, 0) + c,
+            new Vector2I(-1, +1) + c,
+            new Vector2I(0, -1) + c,
+            new Vector2I(0, +1) + c,
+            new Vector2I(+1, -1) + c,
+            new Vector2I(+1, 0) + c,
+            new Vector2I(+1, +1) + c
+        };
     }
 
     private Landmark FindCell(Vector2I index)
@@ -119,34 +105,26 @@ public class Map
                 var distanceSquared = (landmark.CellIndex - _lastHeroCell).LengthSquared();
                 var max = _mapData.LandmarkDistance * _mapData.LandmarkDistance;
                 var min = (_mapData.LandmarkDistance - 1) * (_mapData.LandmarkDistance - 1);
-                if (distanceSquared > min && distanceSquared < max)
-                {
-                    _activeList.Add(l);
-                }
+                if (distanceSquared > min && distanceSquared < max) _activeQueue.Enqueue(l);
                 var distanceToDelete = (landmark.CellIndex - heroCell).LengthSquared();
-                if (distanceToDelete >= max)
-                {
-                    deleteList.Add(l);
-                }
+                if (distanceToDelete >= max) deleteList.Add(l);
             }
-            
-            GenerateLandmarks(heroCell);
+
+            GenerateLandmarksCellBased(heroCell);
 
             var ordered = deleteList.OrderByDescending(i => i);
             foreach (var i in ordered)
             {
+                _cache.Cache(_landmarks[i].CellIndex, _landmarks[i]);
                 _landmarks.RemoveAt(i);
-            }            
-                        
+            }
+
             _lastHeroCell = heroCell;
         }
 
         var children = parent.GetChildren();
-        for (var i = children.Count - 1; i >= 0; i--)
-        {
-            children[i].Free();
-        }
-        
+        for (var i = children.Count - 1; i >= 0; i--) children[i].Free();
+
         foreach (var landmark in _landmarks)
         {
             if (landmark is null or { IsRendered: true }) continue;

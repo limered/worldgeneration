@@ -28,7 +28,7 @@ public partial class MapNode : Node3D
             _pointDistanceRadius * 2,
             30
         ));
-        _map.GenerateInitialChunks();
+        _map.GenerateInitial();
     }
 
     public override void _Process(double delta)
