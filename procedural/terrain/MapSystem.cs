@@ -1,23 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using dla_terrain.SystemBase;
 using Godot;
 
 namespace dla_terrain.Procedural.Terrain;
 
-public class Map
+public class MapSystem : ISystem
 {
-    private readonly LandmarkCache _cache;
-    private readonly int _gridSize;
-    private readonly List<Landmark> _landmarks;
-    private readonly PackedScene _landmarkScene;
-    private readonly MapInitialization _mapData;
-
     private Queue<int> _activeQueue;
+    private LandmarkCache _cache;
+    private int _gridSize;
+    private List<Landmark> _landmarks;
+    private PackedScene _landmarkScene;
 
     private Vector2I _lastHeroCell;
+    private MapInitialization _mapData;
 
-    public Map(MapInitialization mapData)
+    public MapSystem Init(MapInitialization mapData)
     {
         _mapData = mapData;
         _gridSize = (int)(_mapData.R * Math.Sqrt(2));
@@ -25,14 +25,16 @@ public class Map
         _cache = new LandmarkCache();
 
         _landmarkScene = GD.Load<PackedScene>("res://Scenes/chunk_center.tscn");
-    }
 
+        return this;
+    }
+    
     private Vector2I ToCell(Vector3 v)
     {
         return new Vector2I((int)(v.X / _gridSize), (int)(v.Z / _gridSize));
     }
 
-    public void GenerateInitial()
+    public MapSystem Generate()
     {
         _activeQueue = new Queue<int>();
         _landmarks.Add(new Landmark(
@@ -42,6 +44,8 @@ public class Map
         _activeQueue.Enqueue(0);
 
         GenerateLandmarksCellBased(new Vector2I(0, 0));
+        
+        return this;
     }
 
     private void GenerateLandmarksCellBased(Vector2I generateAroundIndex)
