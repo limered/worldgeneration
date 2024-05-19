@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using dla_terrain.Procedural.Terrain.Nodes;
 using dla_terrain.SystemBase;
 using Godot;
 
@@ -24,11 +25,11 @@ public class MapSystem : ISystem
         _landmarks = new List<Landmark>(_mapData.MaxChunksCount);
         _cache = new LandmarkCache();
 
-        _landmarkScene = GD.Load<PackedScene>("res://Scenes/chunk_center.tscn");
+        _landmarkScene = GD.Load<PackedScene>("res://Scenes/landmark.tscn");
 
         return this;
     }
-    
+
     private Vector2I ToCell(Vector3 v)
     {
         return new Vector2I((int)(v.X / _gridSize), (int)(v.Z / _gridSize));
@@ -44,7 +45,7 @@ public class MapSystem : ISystem
         _activeQueue.Enqueue(0);
 
         GenerateLandmarksCellBased(new Vector2I(0, 0));
-        
+
         return this;
     }
 
@@ -63,15 +64,17 @@ public class MapSystem : ISystem
                 if (neighbour != null) continue;
                 _activeQueue.Enqueue(_landmarks.Count);
                 if (_cache.Contains(neighbourCoordinates[n]))
+                {
                     _landmarks.Add(_cache.Retrieve(neighbourCoordinates[n]));
+                }
                 else
                 {
                     var landmark = new Landmark(
-                        neighbourCoordinates[n],
-                        _gridSize,
-                        _mapData.MasterSeed)
+                            neighbourCoordinates[n],
+                            _gridSize,
+                            _mapData.MasterSeed)
                         .Generate();
-                    
+
                     _landmarks.Add(landmark);
                 }
             }
@@ -135,10 +138,15 @@ public class MapSystem : ISystem
         foreach (var landmark in _landmarks)
         {
             if (landmark is null) continue;
-            var sceneInstance = _landmarkScene.Instantiate<Node3D>();
-            // sceneInstance.Position = new Vector3(landmark.Coordinate.X, 0, landmark.Coordinate.Y);
-            sceneInstance.Position = landmark.LandmarkPosition;
-            parent.AddChild(sceneInstance);
+            
+            var landmarkNode = _landmarkScene.Instantiate<LandmarkNode>();
+            landmarkNode.Position = landmark.CellCoordinate;
+            landmarkNode.CellIndex = landmark.CellIndex;
+            landmarkNode.CenterPosition(landmark.LandmarkPosition);
+            landmarkNode.SetupGround(_gridSize);
+            // landmarkNode.Ground
+                
+            parent.AddChild(landmarkNode);
             // GD.Print(chunk.LandmarkPosition + " , " + chunk.CellIndex);
         }
     }

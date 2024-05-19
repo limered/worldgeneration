@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3 uid="uid://dyor1jo80oao"]
+
+[ext_resource type="Script" path="res://Procedural/Terrain/Nodes/LandmarkNode.cs" id="1_814ap"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8f5cl"]
+albedo_color = Color(1, 0, 0, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_7lft7"]
+material = SubResource("StandardMaterial3D_8f5cl")
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_o8bm3"]
+size = Vector2(1, 1)
+subdivide_width = 10
+subdivide_depth = 10
+
+[node name="Node3D" type="Node3D" node_paths=PackedStringArray("Center", "Ground")]
+script = ExtResource("1_814ap")
+Center = NodePath("Center")
+Ground = NodePath("Ground")
+
+[node name="Center" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0)
+mesh = SubResource("SphereMesh_7lft7")
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_o8bm3")
