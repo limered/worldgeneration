@@ -38,7 +38,7 @@ public class Map
         _landmarks.Add(new Landmark(
             new Vector2I(0, 0),
             _gridSize,
-            _mapData.MasterSeed));
+            _mapData.MasterSeed).Generate());
         _activeQueue.Enqueue(0);
 
         GenerateLandmarksCellBased(new Vector2I(0, 0));
@@ -61,10 +61,15 @@ public class Map
                 if (_cache.Contains(neighbourCoordinates[n]))
                     _landmarks.Add(_cache.Retrieve(neighbourCoordinates[n]));
                 else
-                    _landmarks.Add(new Landmark(
+                {
+                    var landmark = new Landmark(
                         neighbourCoordinates[n],
                         _gridSize,
-                        _mapData.MasterSeed));
+                        _mapData.MasterSeed)
+                        .Generate();
+                    
+                    _landmarks.Add(landmark);
+                }
             }
         }
     }
