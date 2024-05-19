@@ -3,7 +3,7 @@ using Godot;
 
 namespace dla_terrain.Hero;
 
-public partial class MainHero : Node3D
+public partial class MainHeroNode : Node3D
 {
     [Export] private float _speed;
     [Export] private float _drag;
