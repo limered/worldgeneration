@@ -19,7 +19,6 @@ Center = NodePath("Center")
 Ground = NodePath("Ground")
 
 [node name="Center" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0)
 mesh = SubResource("SphereMesh_7lft7")
 
 [node name="Ground" type="MeshInstance3D" parent="."]
