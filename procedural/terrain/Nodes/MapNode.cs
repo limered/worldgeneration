@@ -24,9 +24,7 @@ public partial class MapNode : Node3D
             GD.Hash(_masterSeed),
             _initialRings,
             _maxChunkCount,
-            _pointDistanceRadius,
-            _pointDistanceRadius * 2,
-            30
+            _pointDistanceRadius
         ));
         _map.GenerateInitial();
     }

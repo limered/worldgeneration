@@ -4,8 +4,6 @@ public readonly record struct MapInitialization(
     int MasterSeed,
     int LandmarkDistance,
     int MaxChunksCount,
-    int R,
-    int R2,
-    int K)
+    int R)
 {
 }

@@ -37,7 +37,6 @@ public class Map
         _activeQueue = new Queue<int>();
         _landmarks.Add(new Landmark(
             new Vector2I(0, 0),
-            new Vector3(0, 0, 0),
             _gridSize,
             _mapData.MasterSeed));
         _activeQueue.Enqueue(0);
@@ -64,7 +63,6 @@ public class Map
                 else
                     _landmarks.Add(new Landmark(
                         neighbourCoordinates[n],
-                        Vector3.Zero,
                         _gridSize,
                         _mapData.MasterSeed));
             }
@@ -127,8 +125,7 @@ public class Map
 
         foreach (var landmark in _landmarks)
         {
-            if (landmark is null or { IsRendered: true }) continue;
-            // landmark.IsRendered = true;
+            if (landmark is null) continue;
             var sceneInstance = _landmarkScene.Instantiate<Node3D>();
             // sceneInstance.Position = new Vector3(landmark.Coordinate.X, 0, landmark.Coordinate.Y);
             sceneInstance.Position = landmark.LandmarkPosition;
