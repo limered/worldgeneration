@@ -35,7 +35,7 @@ public class MapSystem : ISystem
         return new Vector2I((int)(v.X / _gridSize), (int)(v.Z / _gridSize));
     }
 
-    public MapSystem Generate()
+    public MapSystem Generate(Node3D parent)
     {
         _activeQueue = new Queue<int>();
         _landmarks.Add(new Landmark(
@@ -44,13 +44,17 @@ public class MapSystem : ISystem
             _mapData.MasterSeed).Generate());
         _activeQueue.Enqueue(0);
 
-        GenerateLandmarksCellBased(new Vector2I(0, 0));
+        var addedChildren = GenerateLandmarksCellBased(new Vector2I(0, 0));
+        addedChildren.Add(new Vector2I(0, 0));
+
+        AddNewChildren(parent, addedChildren);
 
         return this;
     }
 
-    private void GenerateLandmarksCellBased(Vector2I generateAroundIndex)
+    private List<Vector2I> GenerateLandmarksCellBased(Vector2I generateAroundIndex)
     {
+        var generatedLandmarks = new List<Vector2I>();
         while (_activeQueue.Any())
         {
             var i = _activeQueue.Dequeue();
@@ -63,22 +67,19 @@ public class MapSystem : ISystem
                 var neighbour = FindCell(neighbourCoordinates[n]);
                 if (neighbour != null) continue;
                 _activeQueue.Enqueue(_landmarks.Count);
-                if (_cache.Contains(neighbourCoordinates[n]))
-                {
-                    _landmarks.Add(_cache.Retrieve(neighbourCoordinates[n]));
-                }
-                else
-                {
-                    var landmark = new Landmark(
-                            neighbourCoordinates[n],
-                            _gridSize,
-                            _mapData.MasterSeed)
-                        .Generate();
+                var landmark = _cache.Contains(neighbourCoordinates[n])
+                    ? _cache.Retrieve(neighbourCoordinates[n])
+                    : new Landmark(
+                        neighbourCoordinates[n],
+                        _gridSize,
+                        _mapData.MasterSeed).Generate();
 
-                    _landmarks.Add(landmark);
-                }
+                _landmarks.Add(landmark);
+                generatedLandmarks.Add(landmark.CellIndex);
             }
         }
+
+        return generatedLandmarks;
     }
 
     private static Vector2I[] NeighbourCoordinates(Vector2I c)
@@ -105,6 +106,7 @@ public class MapSystem : ISystem
 
     public void Update(Node3D parent, Vector3 heroPosition)
     {
+        var deletedLandmarks = new List<Vector2I>();
         var heroCell = ToCell(heroPosition);
         if (heroCell != _lastHeroCell)
         {
@@ -120,34 +122,51 @@ public class MapSystem : ISystem
                 if (distanceToDelete >= max) deleteList.Add(l);
             }
 
-            GenerateLandmarksCellBased(heroCell);
+            var addedLandmarks = GenerateLandmarksCellBased(heroCell);
 
             var ordered = deleteList.OrderByDescending(i => i);
             foreach (var i in ordered)
             {
+                deletedLandmarks.Add(_landmarks[i].CellIndex);
                 _cache.Cache(_landmarks[i].CellIndex, _landmarks[i]);
                 _landmarks.RemoveAt(i);
             }
 
+            RemoveRenderedChildren(parent, deletedLandmarks);
+            deletedLandmarks.Clear();
+            
+            AddNewChildren(parent, addedLandmarks);
+
             _lastHeroCell = heroCell;
         }
+    }
 
-        var children = parent.GetChildren();
-        for (var i = children.Count - 1; i >= 0; i--) children[i].Free();
-
-        foreach (var landmark in _landmarks)
+    private void AddNewChildren(Node3D parent, List<Vector2I> addedLandmarks)
+    {
+        foreach (var landmarkIndex in addedLandmarks)
         {
+            var landmark = FindCell(landmarkIndex);
             if (landmark is null) continue;
-            
+
             var landmarkNode = _landmarkScene.Instantiate<LandmarkNode>();
             landmarkNode.Position = landmark.CellCoordinate;
             landmarkNode.CellIndex = landmark.CellIndex;
             landmarkNode.CenterPosition(landmark.LandmarkPosition);
             landmarkNode.SetupGround(_gridSize);
-            // landmarkNode.Ground
-                
+
             parent.AddChild(landmarkNode);
-            // GD.Print(chunk.LandmarkPosition + " , " + chunk.CellIndex);
+        }
+    }
+
+    private static void RemoveRenderedChildren(Node3D parent, List<Vector2I> deletedLandmarks)
+    {
+        var childCount = parent.GetChildCount();
+        for (var d = 0; d < deletedLandmarks.Count; d++)
+        for (var i = childCount - 1; i >= 0; i--)
+        {
+            var landmark = parent.GetChildOrNull<LandmarkNode>(i);
+            if (landmark != null && landmark.CellIndex == deletedLandmarks[d])
+                landmark.Free();
         }
     }
 }

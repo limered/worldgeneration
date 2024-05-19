@@ -26,7 +26,7 @@ public partial class MapNode : Node3D
                 _initialRings,
                 _maxChunkCount,
                 _pointDistanceRadius
-            )).Generate();
+            )).Generate(this);
     }
 
     public override void _Process(double delta)
