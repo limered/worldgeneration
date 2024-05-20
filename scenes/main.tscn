@@ -29,8 +29,8 @@ shadow_enabled = true
 
 [node name="TerrainGeneration" type="Node3D" parent="."]
 script = ExtResource("1_f70bo")
-_initialRings = 10
-_maxChunkCount = 405
+_initialRings = 5
+_maxChunkCount = 400
 _pointDistanceRadius = 5
 
 [node name="Camera3D" type="Camera3D" parent="."]
@@ -39,8 +39,8 @@ fov = 80.0
 
 [node name="Hero" type="Node3D" parent="."]
 script = ExtResource("2_gmls2")
-_speed = 500.0
-_drag = 0.9
+_speed = 200.0
+_drag = 0.93
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Hero"]
 mesh = SubResource("CapsuleMesh_hgohb")

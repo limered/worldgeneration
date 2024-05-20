@@ -57,7 +57,6 @@ public record Landmark
         {
             Mesh = surface.Commit(),
             CastShadow = GeometryInstance3D.ShadowCastingSetting.On
-            // MaterialOverride = _mat
         };
     }
 }
