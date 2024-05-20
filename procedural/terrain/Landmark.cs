@@ -1,4 +1,7 @@
-﻿using dla_terrain.Utils.Godot;
+﻿using System.Collections.Generic;
+using System.Text.Unicode;
+using dla_terrain.Procedural.Terrain.Textures;
+using dla_terrain.Utils.Godot;
 using dla_terrain.Utils.Random;
 using Godot;
 
@@ -11,6 +14,8 @@ public record Landmark
     private readonly SmallXxHash _hash;
 
     private ImageTexture _tex;
+
+    private DlaTree _dla;
     // private Material _mat;
 
     public Landmark(
@@ -23,6 +28,10 @@ public record Landmark
         _cellSize = cellSize;
 
         _hash = SmallXxHash.Seed(masterSeed).Eat(CellIndex.X).Eat(CellIndex.Y);
+
+        var rnd = new RandomNumberGenerator();
+        rnd.Seed = _hash.Eat(0);
+        _dla = new DlaTree(rnd);
     }
 
     public MeshInstance3D Mesh { get; }
@@ -44,33 +53,48 @@ public record Landmark
     {
         if (_tex != null) return _tex;
 
-        var pixelCoord = (LandmarkPosition / _cellSize * 15).XZi();
-
-        var image = Image.Create(16, 16, false, Image.Format.Rgbaf);
+        const int baseSize = 8;
+        
+        var image = Image.Create(baseSize, baseSize, false, Image.Format.Rf);
         image.Fill(Colors.Black);
-        image.SetPixel(pixelCoord.X, pixelCoord.Y, Colors.White);
+
+        var startPixel = (LandmarkPosition / _cellSize * (baseSize - 1)).XZ();
+        _dla.Reset(8, 10, 0.9f, 1f, 5f, startPixel);
+        _dla.AddNewPixelsToTree(0);
+        _dla.CalculateHeights();
+        DrawTree(_dla.Points, image);
+        image.Resize(baseSize * 2, baseSize * 2);
+        Blur2D.BlurImage(image, new Vector2I(3, 3));
+
+        for (var i = 1; i < 5; i++)
+        {
+            _dla.ExpandTree();
+            _dla.FillGaps();
+            _dla.AddNewPixelsToTree(i);
+            _dla.CalculateHeights();
+            DrawTree(_dla.Points, image);
+            image.Resize(baseSize * (2 << i), baseSize * (2 << i));
+            Blur2D.BlurImage(image, new Vector2I(7, 7));
+        }
 
         _tex = ImageTexture.CreateFromImage(image);
         return _tex;
     }
-    //
-    // private void GenerateMesh()
-    // {
-    //     var planeMesh = new PlaneMesh
-    //     {
-    //         Size = new Vector2(_cellSize, _cellSize),
-    //         SubdivideDepth = _cellSize * MeshResolution,
-    //         SubdivideWidth = _cellSize * MeshResolution
-    //     };
-    //
-    //     var surface = new SurfaceTool();
-    //     surface.Begin(Godot.Mesh.PrimitiveType.Triangles);
-    //     surface.CreateFrom(planeMesh, 0);
-    //
-    //     Mesh = new MeshInstance3D
-    //     {
-    //         Mesh = surface.Commit(),
-    //         CastShadow = GeometryInstance3D.ShadowCastingSetting.On
-    //     };
-    // }
+    
+    private static void DrawTree(IReadOnlyList<DlaPoint> points, Image image)
+    {
+        var width = image.GetWidth();
+        var height = image.GetHeight();
+        for (var i = 0; i < points.Count; i++)
+        {
+            var point = points[i];
+            if (point.Position.X >= width ||
+                point.Position.X < 0 ||
+                point.Position.Y >= height ||
+                point.Position.Y < 0) continue;
+            
+            var col = 1f - 1f / (1f + point.Height);
+            image.SetPixel((int)point.Position.X, (int)point.Position.Y, new Color(col, 0, 0));
+        }
+    }
 }

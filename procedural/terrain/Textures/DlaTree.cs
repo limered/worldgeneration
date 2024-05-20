@@ -42,6 +42,24 @@ public class DlaTree
 
         Points = new List<DlaPoint> { _center };
     }
+    
+    public void Reset(
+        int baseSize,
+        int newPixelsPerLayer,
+        float gravity,
+        float stickiness,
+        float jitter,
+        Vector2 startPixel)
+    {
+        _baseSize = baseSize;
+        _gravity = gravity;
+        _stickiness = stickiness;
+        _jitter = jitter;
+        _newPixelsPerLayer = newPixelsPerLayer;
+        _center = new DlaPoint(startPixel);
+
+        Points = new List<DlaPoint> { _center };
+    }
 
     public void AddNewPixelsToTree(int layerId)
     {
