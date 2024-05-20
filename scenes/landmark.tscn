@@ -1,7 +1,8 @@
-[gd_scene load_steps=7 format=3 uid="uid://dyor1jo80oao"]
+[gd_scene load_steps=8 format=3 uid="uid://dyor1jo80oao"]
 
 [ext_resource type="Script" path="res://Procedural/Terrain/Nodes/LandmarkNode.cs" id="1_814ap"]
 [ext_resource type="Shader" path="res://Shaders/ground.gdshader" id="2_vv7kx"]
+[ext_resource type="Texture2D" uid="uid://dn12i2g20d8hh" path="res://Textures/woodland.png" id="3_6j5lp"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8f5cl"]
 albedo_color = Color(1, 0, 0, 1)
@@ -10,10 +11,13 @@ albedo_color = Color(1, 0, 0, 1)
 material = SubResource("StandardMaterial3D_8f5cl")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_lr38u"]
+resource_local_to_scene = true
 render_priority = 0
 shader = ExtResource("2_vv7kx")
+shader_parameter/albedo = ExtResource("3_6j5lp")
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_o8bm3"]
+resource_local_to_scene = true
 material = SubResource("ShaderMaterial_lr38u")
 size = Vector2(1, 1)
 subdivide_width = 10

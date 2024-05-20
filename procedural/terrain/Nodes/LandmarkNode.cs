@@ -18,4 +18,12 @@ public partial class LandmarkNode : Node3D
         Ground.Scale = new Vector3(cellSize, cellSize, cellSize);
         Ground.Position = new Vector3(cellSize / 2f, 0, cellSize / 2f);
     }
+
+    public void GroundTexture(ImageTexture tex)
+    {
+        if (Ground.Mesh.SurfaceGetMaterial(0) is ShaderMaterial mat)
+        {
+            mat.SetShaderParameter("height_map", tex);
+        }
+    }
 }
