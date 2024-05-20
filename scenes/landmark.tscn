@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://dyor1jo80oao"]
+[gd_scene load_steps=7 format=3 uid="uid://dyor1jo80oao"]
 
 [ext_resource type="Script" path="res://Procedural/Terrain/Nodes/LandmarkNode.cs" id="1_814ap"]
+[ext_resource type="Shader" path="res://Shaders/ground.gdshader" id="2_vv7kx"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8f5cl"]
 albedo_color = Color(1, 0, 0, 1)
@@ -8,7 +9,12 @@ albedo_color = Color(1, 0, 0, 1)
 [sub_resource type="SphereMesh" id="SphereMesh_7lft7"]
 material = SubResource("StandardMaterial3D_8f5cl")
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_lr38u"]
+render_priority = 0
+shader = ExtResource("2_vv7kx")
+
 [sub_resource type="PlaneMesh" id="PlaneMesh_o8bm3"]
+material = SubResource("ShaderMaterial_lr38u")
 size = Vector2(1, 1)
 subdivide_width = 10
 subdivide_depth = 10
