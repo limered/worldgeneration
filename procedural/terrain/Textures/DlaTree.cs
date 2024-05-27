@@ -25,7 +25,13 @@ public class DlaTree
     }
 
     public List<DlaPoint> Points { get; private set; } = new();
+    public Dictionary<Vector2I, int[]> Grid = new();
 
+    private void AddToGrid(DlaPoint p)
+    {
+        
+    }
+    
     public void Reset(
         int baseSize,
         int newPixelsPerLayer,
