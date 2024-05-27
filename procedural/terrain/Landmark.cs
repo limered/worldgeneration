@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Text.Unicode;
 using dla_terrain.Procedural.Terrain.Textures;
 using dla_terrain.Utils.Godot;
 using dla_terrain.Utils.Random;
@@ -7,7 +6,7 @@ using Godot;
 
 namespace dla_terrain.Procedural.Terrain;
 
-public enum GenomeMap : int
+public enum GenomeMap
 {
     CenterPointCoords,
     DLATreeSeed,
@@ -16,10 +15,10 @@ public enum GenomeMap : int
 
 public record Landmark
 {
-    private readonly int _cellSize;
     private readonly SmallXxHash _baseHash;
-    private readonly SmallXxHash[] _landmarkGenome = new SmallXxHash[3];
+    private readonly int _cellSize;
     private readonly DlaTree _dla;
+    private readonly SmallXxHash[] _landmarkGenome = new SmallXxHash[3];
 
     private ImageTexture _tex;
 
@@ -46,6 +45,7 @@ public record Landmark
     public Vector3 LandmarkPosition { get; private set; }
     public Vector2I CellIndex { get; }
     public Vector3 CellCoordinate { get; }
+
     public float HeightMultiplier => _landmarkGenome[(int)GenomeMap.CenterPointHeight].Float01A() * 2f - 1f;
 
     public Landmark Generate()
@@ -67,7 +67,7 @@ public record Landmark
         image.Fill(Colors.Black);
 
         var startPixel = (LandmarkPosition / _cellSize * (baseSize - 1)).XZ();
-        _dla.Reset(8, 10, 0.9f, 1f, 5f, startPixel);
+        _dla.Reset(8, 10, 0.3f, 0.5f, 1.5f, startPixel);
         _dla.AddNewPixelsToTree(0);
         _dla.CalculateHeights();
         DrawTree(_dla.Points, image);
@@ -85,11 +85,11 @@ public record Landmark
             Blur2D.BlurImage(image, new Vector2I(7, 7));
         }
 
-        var finalSize = baseSize * (2 << 4) + 32;
+        var finalSize = baseSize * (2 << 4); // + 32;
         var final = Image.Create(finalSize, finalSize, false, Image.Format.Rf);
-        final.BlendRect(image, new Rect2I(0, 0, image.GetWidth(), image.GetHeight()), 16.ToVector2I());
-        Blur2D.BlurImage(final, new Vector2I(8, 8));
-        final.Resize(1024, 1024, Image.Interpolation.Lanczos);
+        final.BlendRect(image, new Rect2I(0, 0, image.GetWidth(), image.GetHeight()), 0.ToVector2I());
+        // Blur2D.BlurImage(final, new Vector2I(8, 8));
+        final.Resize(1024, 1024);
         _tex = ImageTexture.CreateFromImage(final);
         return _tex;
     }
@@ -109,10 +109,11 @@ public record Landmark
             // var col = 1f - 1f / (1f + point.Height);
             // var col = 1f / 1f + Mathf.Exp(-point.Height);
             // var col = (1 + Mathf.Tanh(point.Height)) / 2f * 0.5f + 0.5f;
-            var col = Logistic(point.Height, 0.7f, 2f);
+            var col = Logistic(point.Height, 0.2f, 0f);
             image.SetPixel((int)point.Position.X, (int)point.Position.Y, new Color(col, 0, 0));
         }
     }
+
     private static float Logistic(float x, float k = 1, float x0 = 0)
     {
         return 1f / (1f + Mathf.Exp(-k * (x - x0)));

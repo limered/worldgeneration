@@ -24,14 +24,15 @@ glow_enabled = true
 environment = SubResource("Environment_ota5g")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.66262, -0.0782871, 0.744853, 0, 0.994521, 0.104528, -0.748956, -0.0692626, 0.65899, 0, 24.288, -17.8632)
+transform = Transform3D(0.66262, -0.0782868, 0.744853, -0.536452, 0.644395, 0.544954, -0.522642, -0.760675, 0.384991, 0, 24.288, -17.8632)
 shadow_enabled = true
 
 [node name="TerrainGeneration" type="Node3D" parent="."]
 script = ExtResource("1_f70bo")
 _initialRings = 3
+_masterSeed = "helen"
 _maxChunkCount = 400
-_pointDistanceRadius = 50
+_pointDistanceRadius = 10
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.5, 0.866025, 0, -0.866025, 0.5, 0, 29, 22)

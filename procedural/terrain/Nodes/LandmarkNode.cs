@@ -15,7 +15,7 @@ public partial class LandmarkNode : Node3D
 
     public void SetupGround(int cellSize)
     {
-        Ground.Scale = new Vector3(cellSize, cellSize, cellSize);
+        Ground.Scale = new Vector3(cellSize, 1, cellSize);
         Ground.Position = new Vector3(cellSize / 2f, 0, cellSize / 2f);
     }
 

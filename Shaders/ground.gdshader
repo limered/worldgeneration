@@ -8,11 +8,11 @@ uniform float height_multiplier;
 varying vec2 tex_position;
 
 void vertex() {
-  VERTEX.y = texture(height_map, UV).x * height_multiplier * 0.2;
+  VERTEX.y = texture(height_map, UV).x * height_multiplier * 5.0;
 }
 
 void fragment(){
-	float height = (texture(height_map, UV).x * height_multiplier) * 0.5 - 0.52;
+	float height = (texture(height_map, UV).x * height_multiplier) * 0.5 - 0.60;
 	float fresnel = sqrt(1.0 - dot(NORMAL, VIEW));
 	//RIM = 0.2;
 	//METALLIC = 0.0;
