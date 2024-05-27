@@ -14,14 +14,15 @@ material = SubResource("StandardMaterial3D_8f5cl")
 resource_local_to_scene = true
 render_priority = 0
 shader = ExtResource("2_vv7kx")
+shader_parameter/height_multiplier = null
 shader_parameter/albedo = ExtResource("3_6j5lp")
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_o8bm3"]
 resource_local_to_scene = true
 material = SubResource("ShaderMaterial_lr38u")
 size = Vector2(1, 1)
-subdivide_width = 10
-subdivide_depth = 10
+subdivide_width = 100
+subdivide_depth = 100
 
 [node name="Node3D" type="Node3D" node_paths=PackedStringArray("Center", "Ground")]
 script = ExtResource("1_814ap")

@@ -14,4 +14,9 @@ public static class VectorExtensions
     {
         return new Vector2I((int)v.X, (int)v.Z);
     }
+
+    public static Vector2I ToVector2I(this int i)
+    {
+        return new Vector2I(i, i);
+    }
 }

@@ -11,7 +11,7 @@ public enum GenomeMap : int
 {
     CenterPointCoords,
     DLATreeSeed,
-    CenterPointHeight,
+    CenterPointHeight
 }
 
 public record Landmark
@@ -19,11 +19,9 @@ public record Landmark
     private readonly int _cellSize;
     private readonly SmallXxHash _baseHash;
     private readonly SmallXxHash[] _landmarkGenome = new SmallXxHash[3];
+    private readonly DlaTree _dla;
 
     private ImageTexture _tex;
-
-    private DlaTree _dla;
-    // private Material _mat;
 
     public Landmark(
         Vector2I cellIndex,
@@ -39,18 +37,16 @@ public record Landmark
         _landmarkGenome[(int)GenomeMap.CenterPointCoords] = baseHash;
         _landmarkGenome[(int)GenomeMap.DLATreeSeed] = baseHash.Eat(0);
         _landmarkGenome[(int)GenomeMap.CenterPointHeight] = baseHash.Eat((int)GenomeMap.CenterPointHeight);
-        
+
         var rnd = new RandomNumberGenerator();
         rnd.Seed = _landmarkGenome[(int)GenomeMap.DLATreeSeed];
         _dla = new DlaTree(rnd);
-
     }
 
     public Vector3 LandmarkPosition { get; private set; }
     public Vector2I CellIndex { get; }
     public Vector3 CellCoordinate { get; }
-    public float HeightMultiplier => _landmarkGenome[(int)GenomeMap.CenterPointHeight].Float01A();
-
+    public float HeightMultiplier => _landmarkGenome[(int)GenomeMap.CenterPointHeight].Float01A() * 2f - 1f;
 
     public Landmark Generate()
     {
@@ -66,7 +62,7 @@ public record Landmark
         if (_tex != null) return _tex;
 
         const int baseSize = 8;
-        
+
         var image = Image.Create(baseSize, baseSize, false, Image.Format.Rf);
         image.Fill(Colors.Black);
 
@@ -89,10 +85,15 @@ public record Landmark
             Blur2D.BlurImage(image, new Vector2I(7, 7));
         }
 
-        _tex = ImageTexture.CreateFromImage(image);
+        var finalSize = baseSize * (2 << 4) + 32;
+        var final = Image.Create(finalSize, finalSize, false, Image.Format.Rf);
+        final.BlendRect(image, new Rect2I(0, 0, image.GetWidth(), image.GetHeight()), 16.ToVector2I());
+        Blur2D.BlurImage(final, new Vector2I(8, 8));
+        final.Resize(1024, 1024, Image.Interpolation.Lanczos);
+        _tex = ImageTexture.CreateFromImage(final);
         return _tex;
     }
-    
+
     private static void DrawTree(IReadOnlyList<DlaPoint> points, Image image)
     {
         var width = image.GetWidth();
@@ -104,9 +105,16 @@ public record Landmark
                 point.Position.X < 0 ||
                 point.Position.Y >= height ||
                 point.Position.Y < 0) continue;
-            
-            var col = 1f - 1f / (1f + point.Height);
+
+            // var col = 1f - 1f / (1f + point.Height);
+            // var col = 1f / 1f + Mathf.Exp(-point.Height);
+            // var col = (1 + Mathf.Tanh(point.Height)) / 2f * 0.5f + 0.5f;
+            var col = Logistic(point.Height, 0.7f, 2f);
             image.SetPixel((int)point.Position.X, (int)point.Position.Y, new Color(col, 0, 0));
         }
+    }
+    private static float Logistic(float x, float k = 1, float x0 = 0)
+    {
+        return 1f / (1f + Mathf.Exp(-k * (x - x0)));
     }
 }

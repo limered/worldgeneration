@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3 uid="uid://dhtu2smaybcsf"]
 
 [ext_resource type="Script" path="res://Procedural/Terrain/Nodes/MapNode.cs" id="1_f70bo"]
-[ext_resource type="Script" path="res://Hero/MainHeroNode.cs" id="2_gmls2"]
+[ext_resource type="Script" path="res://Utils/Camera.cs" id="2_xw6do"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_fk46r"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
@@ -31,16 +31,16 @@ shadow_enabled = true
 script = ExtResource("1_f70bo")
 _initialRings = 3
 _maxChunkCount = 400
-_pointDistanceRadius = 10
+_pointDistanceRadius = 50
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.5, 0.866025, 0, -0.866025, 0.5, 0, 29, 22)
 fov = 80.0
+script = ExtResource("2_xw6do")
+_speed = 10.0
+_sensitivity = 0.1
 
 [node name="Hero" type="Node3D" parent="."]
-script = ExtResource("2_gmls2")
-_speed = 200.0
-_drag = 0.93
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Hero"]
 mesh = SubResource("CapsuleMesh_hgohb")
