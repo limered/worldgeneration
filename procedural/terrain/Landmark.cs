@@ -7,11 +7,18 @@ using Godot;
 
 namespace dla_terrain.Procedural.Terrain;
 
+public enum GenomeMap : int
+{
+    CenterPointCoords,
+    DLATreeSeed,
+    CenterPointHeight,
+}
+
 public record Landmark
 {
-    private const int MeshResolution = 10;
     private readonly int _cellSize;
-    private readonly SmallXxHash _hash;
+    private readonly SmallXxHash _baseHash;
+    private readonly SmallXxHash[] _landmarkGenome = new SmallXxHash[3];
 
     private ImageTexture _tex;
 
@@ -27,23 +34,28 @@ public record Landmark
         CellCoordinate = new Vector3(CellIndex.X, 0, CellIndex.Y) * cellSize;
         _cellSize = cellSize;
 
-        _hash = SmallXxHash.Seed(masterSeed).Eat(CellIndex.X).Eat(CellIndex.Y);
+        var baseHash = SmallXxHash.Seed(masterSeed).Eat(CellIndex.X).Eat(CellIndex.Y);
 
+        _landmarkGenome[(int)GenomeMap.CenterPointCoords] = baseHash;
+        _landmarkGenome[(int)GenomeMap.DLATreeSeed] = baseHash.Eat(0);
+        _landmarkGenome[(int)GenomeMap.CenterPointHeight] = baseHash.Eat((int)GenomeMap.CenterPointHeight);
+        
         var rnd = new RandomNumberGenerator();
-        rnd.Seed = _hash.Eat(0);
+        rnd.Seed = _landmarkGenome[(int)GenomeMap.DLATreeSeed];
         _dla = new DlaTree(rnd);
+
     }
 
-    public MeshInstance3D Mesh { get; }
     public Vector3 LandmarkPosition { get; private set; }
     public Vector2I CellIndex { get; }
     public Vector3 CellCoordinate { get; }
+    public float HeightMultiplier => _landmarkGenome[(int)GenomeMap.CenterPointHeight].Float01A();
 
 
     public Landmark Generate()
     {
-        var x = _hash.Float01A();
-        var y = _hash.Float01B();
+        var x = _landmarkGenome[(int)GenomeMap.CenterPointCoords].Float01A();
+        var y = _landmarkGenome[(int)GenomeMap.CenterPointCoords].Float01B();
         LandmarkPosition = new Vector3(x * _cellSize, 0, y * _cellSize);
 
         return this;

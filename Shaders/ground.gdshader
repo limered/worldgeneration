@@ -3,11 +3,12 @@ render_mode diffuse_toon, specular_toon;
 
 uniform sampler2D height_map;
 uniform sampler2D albedo;
+uniform float height_multiplier;
 
 varying vec2 tex_position;
 
 void vertex() {
-  VERTEX.y = texture(height_map, UV).x * 0.2;
+  VERTEX.y = texture(height_map, UV).x * height_multiplier * 0.3;
 }
 
 void fragment(){

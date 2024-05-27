@@ -153,7 +153,7 @@ public class MapSystem : ISystem
             landmarkNode.CellIndex = landmark.CellIndex;
             landmarkNode.CenterPosition(landmark.LandmarkPosition);
             landmarkNode.SetupGround(_gridSize);
-            landmarkNode.GroundTexture(landmark.GenerateGroundTexture());
+            landmarkNode.GroundTexture(landmark.GenerateGroundTexture(), landmark.HeightMultiplier);
 
             parent.AddChild(landmarkNode);
         }

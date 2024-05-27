@@ -19,11 +19,12 @@ public partial class LandmarkNode : Node3D
         Ground.Position = new Vector3(cellSize / 2f, 0, cellSize / 2f);
     }
 
-    public void GroundTexture(ImageTexture tex)
+    public void GroundTexture(ImageTexture tex, float landmarkHeightMultiplier)
     {
         if (Ground.Mesh.SurfaceGetMaterial(0) is ShaderMaterial mat)
         {
             mat.SetShaderParameter("height_map", tex);
+            mat.SetShaderParameter("height_multiplier", landmarkHeightMultiplier);
         }
     }
 }
