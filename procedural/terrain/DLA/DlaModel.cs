@@ -7,12 +7,14 @@ namespace dla_terrain.Procedural.Terrain.DLA;
 
 public class DlaModel
 {
-    private const int CellSize = 8;
-    private const float AttractionDistance = 1;
-    private const float MinMoveDistance = 0.2f;
-    private const int Stubbornness = 1;
-    private const float Stickiness = 1;
-    private const float ParticleSpacing = 1;
+    private const int CellSize = 16;
+    private const uint Stubbornness = 1;
+    
+    private const float AttractionDistance = 1f;
+    private const float ParticleSpacing = 1f;
+    
+    private const float MinMoveDistance = 5f;
+    private const float Stickiness = 0.7f;
 
     private readonly Dictionary<Vector2I, List<int>> _index = new();
     private readonly List<uint> _joinAttempts = new();
@@ -52,13 +54,32 @@ public class DlaModel
             if (ShouldReset(p)) p = RandomStartingPosition();
         }
     }
-    
+
+    public void Add(Vector2 v)
+    {
+        var p = new Particle
+        {
+            Position = v,
+            Height = 0,
+            Neighbours = new List<int>()
+        };
+        var index = Points.Count;
+        var gridIndex = GridIndex(p.Position);
+        _boundingRadius = Math.Max(_boundingRadius, v.Length() + AttractionDistance);
+
+        if (_index.TryGetValue(gridIndex, out var points)) points.Add(index);
+        else _index.Add(gridIndex, new List<int>{ index });
+
+        _joinAttempts.Add(0);
+        Points.Add(p);
+    }
+
     private void Add(Vector2 v, int parentIndex)
     {
         var p = new Particle
         {
             Position = v,
-            Neighbours = { parentIndex },
+            Neighbours = new List<int>{ parentIndex },
             Height = 0
         };
         var index = Points.Count;
@@ -66,7 +87,7 @@ public class DlaModel
         _boundingRadius = Math.Max(_boundingRadius, v.Length() + AttractionDistance);
 
         if (_index.TryGetValue(gridIndex, out var points)) points.Add(index);
-        else _index.Add(gridIndex, new List<int>(index));
+        else _index.Add(gridIndex, new List<int>{index});
 
         _joinAttempts.Add(0);
         Points.Add(p);
@@ -115,7 +136,7 @@ public class DlaModel
         var rot = _rnd.RandfRange(0, 360);
         var x = Mathf.Cos(rot);
         var y = Mathf.Sin(rot);
-        return new Vector2(x, y) * _rnd.Randf();
+        return new Vector2(x, y);
     }
 
     private Vector2 RandomUnitSphereOther()
@@ -149,18 +170,17 @@ public class DlaModel
 
     private Vector2 MotionVector()
     {
-        return RandomUnitSphereMy();
+        return RandomUnitSphereOther();
     }
 
     private Vector2 Lerp(Vector2 a, Vector2 b, float t)
     {
-        return new Vector2(
-            Mathf.Lerp(a.X, b.X, t),
-            Mathf.Lerp(a.Y, b.Y, t)
-        );
+        return a + (b - a).Normalized() * t;
+        // return new Vector2(
+        //     Mathf.Lerp(a.X, b.X, t),
+        //     Mathf.Lerp(a.Y, b.Y, t)
+        // );
     }
-
-
 
     private static Vector2I GridIndex(Vector2 v)
     {

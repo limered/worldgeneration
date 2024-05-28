@@ -13,6 +13,6 @@ public struct Particle
     }
 
     public Vector2 Position { get; set; }
-    public List<int> Neighbours { get; }
+    public List<int> Neighbours { get; init; }
     public int Height { get; set; }
 }

@@ -1,5 +1,5 @@
+using dla_terrain.Procedural.Terrain.DLA;
 using dla_terrain.Procedural.Terrain.Poisson;
-using dla_terrain.Procedural.Terrain.Textures;
 using Godot;
 
 namespace dla_terrain.Procedural.Terrain;
@@ -20,7 +20,7 @@ public partial class TerrainGeneration : Node
 
     public override void _Ready()
     {
-        _dla = new DlaAlgorithm(_seed);
+        _dla = new DlaAlgorithm();
         _dsc = new DiscSamplingAlgorithm(_seed);
 
         GenerateMesh();
@@ -53,8 +53,9 @@ public partial class TerrainGeneration : Node
     private void GenerateHeightMap()
     {
         if (_dsc.IsGenerating) return;
-        var texture = _dsc.Create();//_dla.Create();
+        var texture = _dla.Run(5000);
         _mat.SetShaderParameter("height_map", texture);
+        _mat.SetShaderParameter("height_multiplier", 0.3);
     }
 
     public override void _Process(double delta)
