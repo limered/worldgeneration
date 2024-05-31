@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
@@ -37,10 +37,13 @@ public class DlaModel
         {
             var parentIndex = Nearest(p);
             var d = p.DistanceTo(Points[parentIndex].Position);
-            if (d < AttractionDistance)
+            if (d < _config.AttractionDistance)
             {
                 if (!ShouldJoin(parentIndex))
-                    p = Lerp(Points[parentIndex].Position, p, AttractionDistance + MinMoveDistance);
+                {
+                    p = Lerp(Points[parentIndex].Position, p, _config.AttractionDistance + _config.MinMoveDistance);
+                    continue;
+                }
 
                 p = PlaceParticle(p, parentIndex);
 
