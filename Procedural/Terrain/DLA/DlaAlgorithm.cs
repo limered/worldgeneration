@@ -19,8 +19,9 @@ public class DlaAlgorithm
     {
         const int size = 256;
         var image = Image.Create(size, size, false, Image.Format.Rf);
-
-        _model = new DlaModel(_rnd, new DlaModelConfiguration());
+        
+        _model.Clear();
+        
         _model.AddSeedParticle(Vector2.Zero);
         for (var i = 0; i < count; i++) _model.AddParticle();
         _model.Scale(2);

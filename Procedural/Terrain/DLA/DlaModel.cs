@@ -8,10 +8,10 @@ namespace dla_terrain.Procedural.Terrain.DLA;
 public class DlaModel
 {
     private readonly DlaModelConfiguration _config;
-    private readonly RandomNumberGenerator _rnd;
 
     private readonly Dictionary<Vector2I, List<int>> _index = new();
     private readonly List<uint> _joinAttempts = new();
+    private readonly RandomNumberGenerator _rnd;
 
     private float _boundingRadius;
 
@@ -54,22 +54,7 @@ public class DlaModel
         }
     }
 
-    private void Add(Vector2 v, int parentIndex)
-    {
-        var p = new Particle
-        {
-            Position = v,
-            Neighbours = new List<int> { parentIndex },
-            Height = 0
-        };
-        var index = Points.Count;
-        UpdateRadius(v);
-        AddToIndex(GridIndex(p.Position), index);
 
-        _joinAttempts.Add(0);
-        Points.Add(p);
-        Points[parentIndex].Neighbours.Add(index);
-    }
 
     public void AddSeedParticle(Vector2 v)
     {
@@ -86,14 +71,7 @@ public class DlaModel
         Points.Add(p);
     }
 
-    private void Add(Particle p)
-    {
-        UpdateRadius(p.Position);
-        AddToIndex(GridIndex(p.Position), Points.Count);
 
-        _joinAttempts.Add(0);
-        Points.Add(p);
-    }
 
     public void Scale(float scale)
     {
@@ -120,7 +98,10 @@ public class DlaModel
             {
                 var neighbour = Points[p.Neighbours[n]];
 
-                //ToDo add Jitter
+                //ToDo: add Jitter
+                
+                // ToDo: use count for more than one particle
+                
                 var newPosition = Lerp(p.Position, neighbour.Position, 0.5f);
                 var newPoint = new Particle
                 {
@@ -146,14 +127,47 @@ public class DlaModel
         }
     }
 
+    public void Clear()
+    {
+        Points.Clear();
+        Points.EnsureCapacity(0);
+        _index.Clear();
+        _joinAttempts.Clear();
+        _joinAttempts.EnsureCapacity(0);
+        _boundingRadius = 0;
+    }
 
+    private void Add(Vector2 v, int parentIndex)
+    {
+        var p = new Particle
+        {
+            Position = v,
+            Neighbours = new List<int> { parentIndex },
+            Height = 0
+        };
+        var index = Points.Count;
+        UpdateRadius(v);
+        AddToIndex(GridIndex(p.Position), index);
+
+        _joinAttempts.Add(0);
+        Points.Add(p);
+        Points[parentIndex].Neighbours.Add(index);
+    }
+    
+    private void Add(Particle p)
+    {
+        UpdateRadius(p.Position);
+        AddToIndex(GridIndex(p.Position), Points.Count);
+
+        _joinAttempts.Add(0);
+        Points.Add(p);
+    }
 
     private void AddToIndex(Vector2I gridIndex, int listIndex)
     {
         if (_index.TryGetValue(gridIndex, out var points)) points.Add(listIndex);
         else _index.Add(gridIndex, new List<int> { listIndex });
     }
-
 
 
     private void UpdateRadius(Vector2 position)
@@ -250,7 +264,7 @@ public class DlaModel
         return new Vector2(Mathf.Lerp(a.X, b.X, t), Mathf.Lerp(a.Y, b.Y, t));
     }
 
-private Vector2I GridIndex(Vector2 v)
+    private Vector2I GridIndex(Vector2 v)
     {
         var cells = v / _config.CellSize;
         return new Vector2I((int)cells.X, (int)cells.Y);
