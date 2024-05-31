@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
@@ -7,25 +7,20 @@ namespace dla_terrain.Procedural.Terrain.DLA;
 
 public class DlaModel
 {
-    private const int CellSize = 16;
-    private const uint Stubbornness = 1;
+    private readonly DlaModelConfiguration _config;
+    private readonly RandomNumberGenerator _rnd;
     
-    private const float AttractionDistance = 1f;
-    private const float ParticleSpacing = 1f;
-    
-    private const float MinMoveDistance = 5f;
-    private const float Stickiness = 0.7f;
-
     private readonly Dictionary<Vector2I, List<int>> _index = new();
     private readonly List<uint> _joinAttempts = new();
 
-    private readonly RandomNumberGenerator _rnd;
-
     private float _boundingRadius;
 
-    public DlaModel(RandomNumberGenerator rnd)
+    public DlaModel(
+        RandomNumberGenerator rnd, 
+        DlaModelConfiguration config)
     {
         _rnd = rnd;
+        _config = config;
     }
 
     public List<Particle> Points { get; } = new();
@@ -51,7 +46,7 @@ public class DlaModel
                 return;
             }
 
-            var m = Mathf.Max(MinMoveDistance, d - AttractionDistance);
+            var m = Mathf.Max(_config.MinMoveDistance, d - _config.AttractionDistance);
             p += MotionVector().Normalized() * m;
 
             if (ShouldReset(p)) p = RandomStartingPosition();
@@ -68,7 +63,7 @@ public class DlaModel
         };
         var index = Points.Count;
         var gridIndex = GridIndex(p.Position);
-        _boundingRadius = Math.Max(_boundingRadius, v.Length() + AttractionDistance);
+        _boundingRadius = Math.Max(_boundingRadius, v.Length() + _config.AttractionDistance);
 
         if (_index.TryGetValue(gridIndex, out var points)) points.Add(index);
         else _index.Add(gridIndex, new List<int>{ index });
@@ -87,7 +82,7 @@ public class DlaModel
         };
         var index = Points.Count;
         var gridIndex = GridIndex(p.Position);
-        _boundingRadius = Math.Max(_boundingRadius, v.Length() + AttractionDistance);
+        _boundingRadius = Math.Max(_boundingRadius, v.Length() + _config.AttractionDistance);
 
         if (_index.TryGetValue(gridIndex, out var points)) points.Add(index);
         else _index.Add(gridIndex, new List<int>{index});
@@ -158,16 +153,16 @@ public class DlaModel
 
     private bool ShouldJoin(int parentIndex)
     {
-        if (++_joinAttempts[parentIndex] < Stubbornness) return false;
-        return _rnd.Randf() <= Stickiness;
+        if (++_joinAttempts[parentIndex] < _config.Stubbornness) return false;
+        return _rnd.Randf() <= _config.Stickiness;
     }
 
     private Vector2 PlaceParticle(Vector2 p, int parentIndex)
     {
         var parent = Points[parentIndex];
         var newPosition = new Vector2(
-            Mathf.Lerp(parent.Position.X, p.X, ParticleSpacing),
-            Mathf.Lerp(parent.Position.Y, p.Y, ParticleSpacing));
+            Mathf.Lerp(parent.Position.X, p.X, _config.ParticleSpacing),
+            Mathf.Lerp(parent.Position.Y, p.Y, _config.ParticleSpacing));
         return newPosition;
     }
 
@@ -179,15 +174,11 @@ public class DlaModel
     private Vector2 Lerp(Vector2 a, Vector2 b, float t)
     {
         return a + (b - a).Normalized() * t;
-        // return new Vector2(
-        //     Mathf.Lerp(a.X, b.X, t),
-        //     Mathf.Lerp(a.Y, b.Y, t)
-        // );
     }
 
-    private static Vector2I GridIndex(Vector2 v)
+    private Vector2I GridIndex(Vector2 v)
     {
-        var cells = v / CellSize;
+        var cells = v / _config.CellSize;
         return new Vector2I((int)cells.X, (int)cells.Y);
     }
 }

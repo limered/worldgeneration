@@ -12,7 +12,7 @@ public class DlaAlgorithm
     {
         _rnd = new RandomNumberGenerator();
         _rnd.Seed = (ulong)GD.Hash("emil");
-        _model = new DlaModel(_rnd);
+        _model = new DlaModel(_rnd, new DlaModelConfiguration());
     }
 
     public ImageTexture Run(int count)
@@ -20,7 +20,7 @@ public class DlaAlgorithm
         const int size = 256;
         var image = Image.Create(size, size, false, Image.Format.Rf);
 
-        _model = new DlaModel(_rnd);
+        _model = new DlaModel(_rnd, new DlaModelConfiguration());
         _model.Add(Vector2.Zero);
         for (var i = 0; i < count; i++) _model.AddParticle();
 
