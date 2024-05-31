@@ -21,8 +21,18 @@ public class DlaAlgorithm
         var image = Image.Create(size, size, false, Image.Format.Rf);
 
         _model = new DlaModel(_rnd, new DlaModelConfiguration());
-        _model.Add(Vector2.Zero);
+        _model.AddSeedParticle(Vector2.Zero);
         for (var i = 0; i < count; i++) _model.AddParticle();
+        _model.Scale(2);
+        _model.FillGaps(1);
+        // for (var i = 0; i < count; i++) _model.AddParticle();
+        _model.Scale(2);
+        _model.FillGaps(1);
+        
+        _model.Scale(2);
+        _model.FillGaps(1);
+        // for (var i = 0; i < count; i++) _model.AddParticle();
+        
 
         foreach (var point in _model.Points)
         {

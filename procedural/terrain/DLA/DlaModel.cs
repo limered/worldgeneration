@@ -9,14 +9,14 @@ public class DlaModel
 {
     private readonly DlaModelConfiguration _config;
     private readonly RandomNumberGenerator _rnd;
-    
+
     private readonly Dictionary<Vector2I, List<int>> _index = new();
     private readonly List<uint> _joinAttempts = new();
 
     private float _boundingRadius;
 
     public DlaModel(
-        RandomNumberGenerator rnd, 
+        RandomNumberGenerator rnd,
         DlaModelConfiguration config)
     {
         _rnd = rnd;
@@ -36,7 +36,8 @@ public class DlaModel
             {
                 if (!ShouldJoin(parentIndex))
                 {
-                    p = Lerp(Points[parentIndex].Position, p, _config.AttractionDistance + _config.MinMoveDistance);
+                    p = ScaleDistance(Points[parentIndex].Position, p,
+                        _config.AttractionDistance + _config.MinMoveDistance);
                     continue;
                 }
 
@@ -53,7 +54,24 @@ public class DlaModel
         }
     }
 
-    public void Add(Vector2 v)
+    private void Add(Vector2 v, int parentIndex)
+    {
+        var p = new Particle
+        {
+            Position = v,
+            Neighbours = new List<int> { parentIndex },
+            Height = 0
+        };
+        var index = Points.Count;
+        UpdateRadius(v);
+        AddToIndex(GridIndex(p.Position), index);
+
+        _joinAttempts.Add(0);
+        Points.Add(p);
+        Points[parentIndex].Neighbours.Add(index);
+    }
+
+    public void AddSeedParticle(Vector2 v)
     {
         var p = new Particle
         {
@@ -61,35 +79,86 @@ public class DlaModel
             Height = 0,
             Neighbours = new List<int>()
         };
-        var index = Points.Count;
-        var gridIndex = GridIndex(p.Position);
-        _boundingRadius = Math.Max(_boundingRadius, v.Length() + _config.AttractionDistance);
-
-        if (_index.TryGetValue(gridIndex, out var points)) points.Add(index);
-        else _index.Add(gridIndex, new List<int>{ index });
+        UpdateRadius(p.Position);
+        AddToIndex(GridIndex(p.Position), Points.Count);
 
         _joinAttempts.Add(0);
         Points.Add(p);
     }
 
-    private void Add(Vector2 v, int parentIndex)
+    private void Add(Particle p)
     {
-        var p = new Particle
-        {
-            Position = v,
-            Neighbours = new List<int>{ parentIndex },
-            Height = 0
-        };
-        var index = Points.Count;
-        var gridIndex = GridIndex(p.Position);
-        _boundingRadius = Math.Max(_boundingRadius, v.Length() + _config.AttractionDistance);
-
-        if (_index.TryGetValue(gridIndex, out var points)) points.Add(index);
-        else _index.Add(gridIndex, new List<int>{index});
+        UpdateRadius(p.Position);
+        AddToIndex(GridIndex(p.Position), Points.Count);
 
         _joinAttempts.Add(0);
         Points.Add(p);
-        Points[parentIndex].Neighbours.Add(index);
+    }
+
+    public void Scale(float scale)
+    {
+        _index.Clear();
+        for (var i = 0; i < Points.Count; i++)
+        {
+            var p = Points[i];
+            p.Position *= scale;
+            Points[i] = p;
+            UpdateRadius(p.Position);
+            AddToIndex(GridIndex(p.Position), i);
+            _joinAttempts[i] = 0;
+        }
+    }
+
+    public void FillGaps(int count)
+    {
+        var length = Points.Count;
+        for (var i = 0; i < length; i++)
+        {
+            var p = Points[i];
+
+            for (var n = 0; n < p.Neighbours.Count; n++)
+            {
+                var neighbour = Points[p.Neighbours[n]];
+
+                //ToDo add Jitter
+                var newPosition = Lerp(p.Position, neighbour.Position, 0.5f);
+                var newPoint = new Particle
+                {
+                    Position = newPosition,
+                    Height = 0,
+                    Neighbours = new List<int>
+                    {
+                        p.Neighbours[n],
+                        i
+                    }
+                };
+
+                var pointIndex = neighbour.Neighbours.IndexOf(i);
+                neighbour.Neighbours[pointIndex] = Points.Count;
+                Points[p.Neighbours[n]] = neighbour;
+
+                p.Neighbours[n] = Points.Count;
+
+                Add(newPoint);
+            }
+
+            Points[i] = p;
+        }
+    }
+
+
+
+    private void AddToIndex(Vector2I gridIndex, int listIndex)
+    {
+        if (_index.TryGetValue(gridIndex, out var points)) points.Add(listIndex);
+        else _index.Add(gridIndex, new List<int> { listIndex });
+    }
+
+
+
+    private void UpdateRadius(Vector2 position)
+    {
+        _boundingRadius = Math.Max(_boundingRadius, position.Length() + _config.AttractionDistance);
     }
 
     private int Nearest(Vector2 v)
@@ -171,12 +240,17 @@ public class DlaModel
         return RandomUnitSphereOther();
     }
 
-    private Vector2 Lerp(Vector2 a, Vector2 b, float t)
+    private Vector2 ScaleDistance(Vector2 a, Vector2 b, float t)
     {
         return a + (b - a).Normalized() * t;
     }
 
-    private Vector2I GridIndex(Vector2 v)
+    private Vector2 Lerp(Vector2 a, Vector2 b, float t)
+    {
+        return new Vector2(Mathf.Lerp(a.X, b.X, t), Mathf.Lerp(a.Y, b.Y, t));
+    }
+
+private Vector2I GridIndex(Vector2 v)
     {
         var cells = v / _config.CellSize;
         return new Vector2I((int)cells.X, (int)cells.Y);

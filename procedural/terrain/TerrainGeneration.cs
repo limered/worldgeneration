@@ -53,7 +53,7 @@ public partial class TerrainGeneration : Node
     private void GenerateHeightMap()
     {
         if (_dsc.IsGenerating) return;
-        var texture = _dla.Run(5000);
+        var texture = _dla.Run(1000);
         _mat.SetShaderParameter("height_map", texture);
         _mat.SetShaderParameter("height_multiplier", 0.3);
     }
