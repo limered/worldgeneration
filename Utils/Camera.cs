@@ -1,4 +1,3 @@
-using System;
 using Godot;
 
 namespace dla_terrain.Utils;
@@ -59,7 +58,7 @@ public partial class Camera : Node3D
         var pitch = _lastMouseMotion.Y;
         _lastMouseMotion = Vector2.Zero;
 
-        pitch = Math.Clamp(pitch, -90f - _totalPitch, 90f - _totalPitch);
+        pitch = Mathf.Clamp(pitch, -90f - _totalPitch, 90f - _totalPitch);
         _totalPitch += pitch;
 
         RotateY(Mathf.DegToRad(-yaw));
