@@ -20,7 +20,7 @@ public partial class TerrainGeneration : Node
 
     public override void _Ready()
     {
-        _dla = new DlaAlgorithm();
+        _dla = new DlaAlgorithm(_seed);
         _dsc = new DiscSamplingAlgorithm(_seed);
 
         GenerateMesh();

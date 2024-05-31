@@ -8,10 +8,10 @@ public class DlaAlgorithm
     private readonly RandomNumberGenerator _rnd;
     private DlaModel _model;
 
-    public DlaAlgorithm()
+    public DlaAlgorithm(string seed)
     {
         _rnd = new RandomNumberGenerator();
-        _rnd.Seed = (ulong)GD.Hash("emil");
+        _rnd.Seed = (ulong)GD.Hash(seed);
         _model = new DlaModel(_rnd, new DlaModelConfiguration());
     }
 
