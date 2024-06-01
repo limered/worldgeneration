@@ -18,7 +18,7 @@ void fragment(){
 	//METALLIC = 0.0;
 	//ROUGHNESS = 0.01 * (1.0 - fresnel);
 	//float color_x = min(height + 0.22f, 0.95);
-	ALBEDO = texture(albedo, vec2(height, 0.5f)).rgb;// + vec3(0.1, 0.3, 0.5) + (0.1 * fresnel);
+	ALBEDO = vec3((height_multiplier + 1.0)/2.0);//texture(albedo, vec2(height, 0.5f)).rgb;// + vec3(0.1, 0.3, 0.5) + (0.1 * fresnel);
 	//ALBEDO = texture(height_map, UV).rgb;//vec3(0.1, 0.3, 0.5) + (0.1 * fresnel);
 	NORMAL = texture(height_map, UV).xyz;
 }

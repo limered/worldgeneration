@@ -19,6 +19,7 @@ glow_enabled = true
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_4l2sv"]
 noise_type = 3
+frequency = 0.02
 fractal_octaves = 2
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_hgohb"]
@@ -36,7 +37,7 @@ shadow_enabled = true
 script = ExtResource("1_medx0")
 _masterSeed = "emil"
 _initialRings = 3
-_pointDistanceRadius = 20
+_pointDistanceRadius = 25
 _baseHeight = SubResource("FastNoiseLite_4l2sv")
 
 [node name="Camera3D" type="Camera3D" parent="."]

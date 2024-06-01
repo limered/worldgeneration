@@ -19,7 +19,8 @@ public partial class MapNode : Node3D
     public override void _Ready()
     {
         _systems = GetNode<SystemCollection>("/root/Systems");
-
+        if (_baseHeight != null) _baseHeight.Frequency = 0.1f / _pointDistanceRadius;
+        
         _map = _systems.System<MapSystem>()
             .Init(new MapInitialization(
                 GD.Hash(_masterSeed),
