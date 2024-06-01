@@ -1,8 +1,7 @@
-[gd_scene load_steps=10 format=3 uid="uid://dhtu2smaybcsf"]
+[gd_scene load_steps=9 format=3 uid="uid://dhtu2smaybcsf"]
 
-[ext_resource type="Script" path="res://Procedural/Terrain/TerrainGeneration.cs" id="1_cenfg"]
-[ext_resource type="Shader" path="res://Shaders/ground.gdshader" id="2_ogata"]
-[ext_resource type="Texture2D" uid="uid://dn12i2g20d8hh" path="res://Textures/woodland.png" id="3_7k30k"]
+[ext_resource type="Script" path="res://Procedural/Terrain/Nodes/MapNode.cs" id="1_medx0"]
+[ext_resource type="Script" path="res://Hero/MainHeroNode.cs" id="3_lj556"]
 [ext_resource type="Script" path="res://Utils/Camera.cs" id="4_lj7ux"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_fk46r"]
@@ -18,11 +17,9 @@ sky = SubResource("Sky_ekaju")
 tonemap_mode = 2
 glow_enabled = true
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_wr2ft"]
-render_priority = 0
-shader = ExtResource("2_ogata")
-shader_parameter/height_multiplier = null
-shader_parameter/albedo = ExtResource("3_7k30k")
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_4l2sv"]
+noise_type = 3
+fractal_octaves = 2
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_hgohb"]
 
@@ -36,8 +33,11 @@ transform = Transform3D(0.66262, -0.0782868, 0.744853, -0.536452, 0.644395, 0.54
 shadow_enabled = true
 
 [node name="TerrainGeneration" type="Node3D" parent="."]
-script = ExtResource("1_cenfg")
-_mat = SubResource("ShaderMaterial_wr2ft")
+script = ExtResource("1_medx0")
+_masterSeed = "emil"
+_initialRings = 3
+_pointDistanceRadius = 20
+_baseHeight = SubResource("FastNoiseLite_4l2sv")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.5, 0.866025, 0, -0.866025, 0.5, 0, 29, 22)
@@ -47,6 +47,7 @@ _speed = 10.0
 _sensitivity = 0.1
 
 [node name="Hero" type="Node3D" parent="."]
+script = ExtResource("3_lj556")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Hero"]
 mesh = SubResource("CapsuleMesh_hgohb")

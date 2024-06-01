@@ -39,9 +39,11 @@ public class MapSystem : ISystem
     {
         _activeQueue = new Queue<int>();
         _landmarks.Add(new Landmark(
-            new Vector2I(0, 0),
-            _gridSize,
-            _mapData.MasterSeed).Generate());
+                new Vector2I(0, 0),
+                _gridSize,
+                _mapData.MasterSeed)
+            .AddHeightNoise(_mapData.HeightNoise)
+            .Generate());
         _activeQueue.Enqueue(0);
 
         var addedChildren = GenerateLandmarksCellBased(new Vector2I(0, 0));
@@ -70,9 +72,11 @@ public class MapSystem : ISystem
                 var landmark = _cache.Contains(neighbourCoordinates[n])
                     ? _cache.Retrieve(neighbourCoordinates[n])
                     : new Landmark(
-                        neighbourCoordinates[n],
-                        _gridSize,
-                        _mapData.MasterSeed).Generate();
+                            neighbourCoordinates[n],
+                            _gridSize,
+                            _mapData.MasterSeed)
+                        .AddHeightNoise(_mapData.HeightNoise)
+                        .Generate();
 
                 _landmarks.Add(landmark);
                 generatedLandmarks.Add(landmark.CellIndex);
@@ -134,7 +138,7 @@ public class MapSystem : ISystem
 
             RemoveRenderedChildren(parent, deletedLandmarks);
             deletedLandmarks.Clear();
-            
+
             AddNewChildren(parent, addedLandmarks);
 
             _lastHeroCell = heroCell;
@@ -153,7 +157,7 @@ public class MapSystem : ISystem
             landmarkNode.CellIndex = landmark.CellIndex;
             landmarkNode.CenterPosition(landmark.LandmarkPosition);
             landmarkNode.SetupGround(_gridSize);
-            landmarkNode.GroundTexture(landmark.GenerateGroundTexture(), landmark.HeightMultiplier);
+            landmarkNode.GroundTexture(landmark.GenerateGroundTexture(), landmark.HeightMultiplier());
 
             parent.AddChild(landmarkNode);
         }

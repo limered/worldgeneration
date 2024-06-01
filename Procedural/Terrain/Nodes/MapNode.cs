@@ -6,14 +6,14 @@ namespace dla_terrain.Procedural.Terrain.Nodes;
 
 public partial class MapNode : Node3D
 {
-    [Export] private int _initialRings;
-
-    private MapSystem _map;
     [Export] private string _masterSeed;
+    [Export] private int _initialRings;
     [Export] private int _maxChunkCount;
-
     [Export] private int _pointDistanceRadius;
 
+    [Export] private FastNoiseLite _baseHeight;
+
+    private MapSystem _map;
     private SystemCollection _systems;
 
     public override void _Ready()
@@ -25,7 +25,8 @@ public partial class MapNode : Node3D
                 GD.Hash(_masterSeed),
                 _initialRings,
                 _maxChunkCount,
-                _pointDistanceRadius
+                _pointDistanceRadius,
+                _baseHeight
             )).Generate(this);
     }
 

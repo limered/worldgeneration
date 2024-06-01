@@ -11,10 +11,10 @@ public class DlaAlgorithm
     private readonly DlaModel _model;
     private uint[] _heights;
 
-    public DlaAlgorithm(string seed)
+    public DlaAlgorithm(ulong seed)
     {
         var rnd = new RandomNumberGenerator();
-        rnd.Seed = (ulong)GD.Hash(seed);
+        rnd.Seed = seed;
         _model = new DlaModel(rnd, new DlaModelConfiguration());
         _image = new DlaImageTexture(8);
     }

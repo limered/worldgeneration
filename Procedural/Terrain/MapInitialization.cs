@@ -1,9 +1,12 @@
-﻿namespace dla_terrain.Procedural.Terrain;
+﻿using Godot;
+
+namespace dla_terrain.Procedural.Terrain;
 
 public readonly record struct MapInitialization(
     int MasterSeed,
     int LandmarkDistance,
     int MaxChunksCount,
-    int R)
+    int R,
+    FastNoiseLite HeightNoise)
 {
 }
