@@ -97,8 +97,7 @@ public class DlaModel
 
                 var jitter = new Vector2(
                     _rnd.RandfRange(-1, 1),
-                    _rnd.RandfRange(-1, 1)
-                    );
+                    _rnd.RandfRange(-1, 1));
 
                 // ToDo: use count for more than one particle
 
@@ -141,7 +140,7 @@ public class DlaModel
         var p = new Particle
         {
             Position = v,
-            Neighbours = new List<int> { parentIndex },
+            Neighbours = new List<int> { parentIndex }
         };
         var index = Points.Count;
         UpdateRadius(v);
@@ -206,10 +205,12 @@ public class DlaModel
 
     private Vector2 RandomStartingPosition()
     {
-        return RandomUnitSphereMy() * _boundingRadius;
+        return (_config.StartingAlgo == StartingPositionAlgorithm.OnRadius
+            ? RandomPointOnUnitRadius()
+            : RandomUnitSphere()) * _boundingRadius;
     }
 
-    private Vector2 RandomUnitSphereMy()
+    private Vector2 RandomPointOnUnitRadius()
     {
         var rot = _rnd.RandfRange(0, 360);
         var x = Mathf.Cos(rot);
@@ -217,7 +218,7 @@ public class DlaModel
         return new Vector2(x, y);
     }
 
-    private Vector2 RandomUnitSphereOther()
+    private Vector2 RandomUnitSphere()
     {
         while (true)
         {
@@ -248,7 +249,7 @@ public class DlaModel
 
     private Vector2 MotionVector()
     {
-        return RandomUnitSphereOther();
+        return RandomUnitSphere();
     }
 
     private Vector2 ScaleDistance(Vector2 a, Vector2 b, float t)
