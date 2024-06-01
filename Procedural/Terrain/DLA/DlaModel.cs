@@ -14,7 +14,6 @@ public class DlaModel
     private readonly RandomNumberGenerator _rnd;
 
     private float _boundingRadius;
-    private uint[] _heights;
 
     public DlaModel(
         RandomNumberGenerator rnd,
@@ -125,43 +124,6 @@ public class DlaModel
 
             Points[i] = p;
         }
-    }
-
-    public uint[] CalculateHeights()
-    {
-        _heights = new uint[Points.Count];
-
-        var leafIds = new Queue<int>();
-        for (var i = 0; i < Points.Count; i++)
-            if (Points[i].Neighbours.Count <= 1)
-                leafIds.Enqueue(i);
-
-        while (leafIds.Any())
-        {
-            var id = leafIds.Dequeue();
-            var point = Points[id];
-
-            uint height = 1;
-
-            for (var n = 0; n < point.Neighbours.Count; n++)
-            {
-                var neighbourIndex = point.Neighbours[n];
-                var neighbourHeight = _heights.Length < neighbourIndex ? 0 : _heights[point.Neighbours[n]];
-
-                if (neighbourHeight == 0)
-                {
-                    leafIds.Enqueue(neighbourIndex);
-                }
-                else if (neighbourHeight >= height)
-                {
-                    height = neighbourHeight + 1;
-                }
-            }
-
-            _heights[id] = height;
-        }
-
-        return _heights;
     }
 
     public void Clear()
