@@ -9,10 +9,8 @@ public struct Particle
     {
         Position = position;
         Neighbours = new List<int>(16);
-        Height = 0;
     }
 
     public Vector2 Position { get; set; }
     public List<int> Neighbours { get; init; }
-    public int Height { get; set; }
 }

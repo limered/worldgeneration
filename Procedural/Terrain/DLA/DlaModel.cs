@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
@@ -14,6 +14,7 @@ public class DlaModel
     private readonly RandomNumberGenerator _rnd;
 
     private float _boundingRadius;
+    private uint[] _heights;
 
     public DlaModel(
         RandomNumberGenerator rnd,
@@ -55,13 +56,11 @@ public class DlaModel
     }
 
 
-
     public void AddSeedParticle(Vector2 v)
     {
         var p = new Particle
         {
             Position = v,
-            Height = 0,
             Neighbours = new List<int>()
         };
         UpdateRadius(p.Position);
@@ -70,7 +69,6 @@ public class DlaModel
         _joinAttempts.Add(0);
         Points.Add(p);
     }
-
 
 
     public void Scale(float scale)
@@ -106,7 +104,6 @@ public class DlaModel
                 var newPoint = new Particle
                 {
                     Position = newPosition,
-                    Height = 0,
                     Neighbours = new List<int>
                     {
                         p.Neighbours[n],
@@ -127,6 +124,43 @@ public class DlaModel
         }
     }
 
+    public uint[] CalculateHeights()
+    {
+        _heights = new uint[Points.Count];
+
+        var leafIds = new Queue<int>();
+        for (var i = 0; i < Points.Count; i++)
+            if (Points[i].Neighbours.Count <= 1)
+                leafIds.Enqueue(i);
+
+        while (leafIds.Any())
+        {
+            var id = leafIds.Dequeue();
+            var point = Points[id];
+
+            uint height = 1;
+
+            for (var n = 0; n < point.Neighbours.Count; n++)
+            {
+                var neighbourIndex = point.Neighbours[n];
+                var neighbourHeight = _heights.Length < neighbourIndex ? 0 : _heights[point.Neighbours[n]];
+
+                if (neighbourHeight == 0)
+                {
+                    leafIds.Enqueue(neighbourIndex);
+                }
+                else if (neighbourHeight >= height)
+                {
+                    height = neighbourHeight + 1;
+                }
+            }
+
+            _heights[id] = height;
+        }
+
+        return _heights;
+    }
+
     public void Clear()
     {
         Points.Clear();
@@ -143,7 +177,6 @@ public class DlaModel
         {
             Position = v,
             Neighbours = new List<int> { parentIndex },
-            Height = 0
         };
         var index = Points.Count;
         UpdateRadius(v);
@@ -153,7 +186,7 @@ public class DlaModel
         Points.Add(p);
         Points[parentIndex].Neighbours.Add(index);
     }
-    
+
     private void Add(Particle p)
     {
         UpdateRadius(p.Position);
