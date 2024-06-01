@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
@@ -96,14 +96,17 @@ public class DlaModel
             {
                 var neighbour = Points[p.Neighbours[n]];
 
-                //ToDo: add Jitter
-                
+                var jitter = new Vector2(
+                    _rnd.RandfRange(-1, 1),
+                    _rnd.RandfRange(-1, 1)
+                    );
+
                 // ToDo: use count for more than one particle
-                
+
                 var newPosition = Lerp(p.Position, neighbour.Position, 0.5f);
                 var newPoint = new Particle
                 {
-                    Position = newPosition,
+                    Position = newPosition + jitter * _config.Jitter,
                     Neighbours = new List<int>
                     {
                         p.Neighbours[n],
