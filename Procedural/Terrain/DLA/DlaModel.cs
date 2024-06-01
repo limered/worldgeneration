@@ -177,11 +177,10 @@ public class DlaModel
     {
         var gridIndex = GridIndex(v);
         var gridCells = _index.Keys;
-        var nearestCell = gridCells.ElementAt(0);
+        var nearestCell = gridCells.First();
         var cellDistance = (nearestCell - gridIndex).LengthSquared();
-        for (var i = 0; i < gridCells.Count; i++)
+        foreach (var currentCell in gridCells)
         {
-            var currentCell = gridCells.ElementAt(i);
             var currentDistance = (currentCell - gridIndex).LengthSquared();
             if (currentDistance >= cellDistance) continue;
 
