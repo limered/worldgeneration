@@ -40,15 +40,22 @@ _initialRings = 3
 _pointDistanceRadius = 25
 _baseHeight = SubResource("FastNoiseLite_4l2sv")
 
-[node name="Camera3D" type="Camera3D" parent="."]
+[node name="Camera3D" type="Camera3D" parent="." node_paths=PackedStringArray("_target")]
 transform = Transform3D(1, 0, 0, 0, 0.5, 0.866025, 0, -0.866025, 0.5, 0, 29, 22)
 fov = 80.0
 script = ExtResource("4_lj7ux")
+_cameraType = 1
 _speed = 10.0
 _sensitivity = 0.1
+_target = NodePath("../Hero")
+_damping = 200.0
+_cameraDistance = 6.0
 
-[node name="Hero" type="Node3D" parent="."]
+[node name="Hero" type="Node3D" parent="." node_paths=PackedStringArray("_camera")]
 script = ExtResource("3_lj556")
+_speed = 20.0
+_drag = 0.95
+_camera = NodePath("../Camera3D")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Hero"]
 mesh = SubResource("CapsuleMesh_hgohb")

@@ -7,7 +7,7 @@ namespace dla_terrain.Procedural.Terrain;
 public enum GenomeMap
 {
     CenterPointCoords,
-    DLATreeSeed,
+    DlaTreeSeed,
     CenterPointHeight
 }
 
@@ -33,10 +33,10 @@ public record Landmark
         var baseHash = SmallXxHash.Seed(masterSeed).Eat(CellIndex.X).Eat(CellIndex.Y);
 
         _landmarkGenome[(int)GenomeMap.CenterPointCoords] = baseHash;
-        _landmarkGenome[(int)GenomeMap.DLATreeSeed] = baseHash.Eat(0);
+        _landmarkGenome[(int)GenomeMap.DlaTreeSeed] = baseHash.Eat(0);
         _landmarkGenome[(int)GenomeMap.CenterPointHeight] = baseHash.Eat((int)GenomeMap.CenterPointHeight);
 
-        _dla = new DlaAlgorithm(_landmarkGenome[(int)GenomeMap.DLATreeSeed]);
+        _dla = new DlaAlgorithm(_landmarkGenome[(int)GenomeMap.DlaTreeSeed]);
     }
 
     public Vector3 LandmarkPosition { get; private set; }

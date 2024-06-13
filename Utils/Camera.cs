@@ -1,12 +1,28 @@
+using dla_terrain.SystemBase;
 using Godot;
 
 namespace dla_terrain.Utils;
 
+public enum CameraType
+{
+    Free,
+    ThirdPerson
+}
+
 public partial class Camera : Node3D
 {
+    [Export] private CameraType _cameraType; 
     [Export] private float _speed;
     [Export] private float _sensitivity;
 
+    [ExportCategory("3rd Person")]
+    [Export] private Node3D _target;
+    [Export(PropertyHint.Range, "1, 500")] private float _damping;
+    [Export] private Vector3 _shoulderOffset;
+    [Export] private float _verticalArmLength;
+    [Export] private float _cameraSide;
+    [Export] private float _cameraDistance;
+    
     private Vector2 _lastMouseMotion = Vector2.Zero;
     private float _totalPitch;
 
@@ -35,8 +51,28 @@ public partial class Camera : Node3D
 
     public override void _Process(double delta)
     {
-        UpdateLook();
-        UpdateMovement(delta);
+        if(_cameraType == CameraType.Free)
+        {
+            UpdateLook();
+            UpdateMovement(delta);
+        }else if (_cameraType == CameraType.ThirdPerson)
+        {
+            UpdateLook();
+            UpdatePositionFromTarget((float)delta);
+        }
+    }
+
+    private void UpdatePositionFromTarget(float dt)
+    {
+        var targetPosition = _target.Position;
+        var movementTarget = targetPosition + Transform.Basis.Z * _cameraDistance;
+
+        if ((Position - movementTarget).Length() < 0.001f)
+        {
+            return;
+        }
+        
+        Position = Math.ExpDecay(movementTarget, Position, _damping, dt);
     }
 
     private void UpdateMovement(double delta)
