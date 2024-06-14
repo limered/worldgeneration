@@ -10,7 +10,7 @@ public enum CameraType
     ThirdPerson
 }
 
-public partial class Camera : Node3D
+public partial class CameraNode : Node3D
 {
     [Export] private CameraType _cameraType; 
     [Export] private float _speed;
