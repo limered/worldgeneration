@@ -7,8 +7,8 @@ namespace dla_terrain.ThirdPersonCamera;
 
 public class ThirdPersonCameraSystem : ISystem
 {
-    public MainHeroNode Person { get; set; }
-    public CameraNode Camera { get; set; }
+    public MainHeroNode Person { private get; set; }
+    public CameraNode Camera { private get; set; }
 
     public Vector3 CameraPosition(double dt, float cameraDistance, float damping)
     {
