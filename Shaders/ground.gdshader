@@ -1,5 +1,5 @@
 shader_type spatial;
-render_mode diffuse_toon, specular_toon;
+render_mode diffuse_toon;
 
 uniform sampler2D height_map;
 uniform sampler2D albedo;

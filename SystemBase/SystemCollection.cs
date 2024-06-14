@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using dla_terrain.Hero;
 using dla_terrain.Procedural.Terrain;
+using dla_terrain.ThirdPersonCamera;
 using Godot;
 
 namespace dla_terrain.SystemBase;
@@ -14,6 +15,7 @@ public partial class SystemCollection : Node
     {
         _systems.Add(typeof(HeroSystem), new HeroSystem());
         _systems.Add(typeof(MapSystem), new MapSystem());
+        _systems.Add(typeof(ThirdPersonCameraSystem), new ThirdPersonCameraSystem());
     }
 
     public T System<T>() where T : ISystem, new()

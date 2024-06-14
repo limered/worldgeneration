@@ -1,4 +1,5 @@
 using dla_terrain.SystemBase;
+using dla_terrain.ThirdPersonCamera;
 using Godot;
 
 namespace dla_terrain.Utils;
@@ -16,7 +17,6 @@ public partial class Camera : Node3D
     [Export] private float _sensitivity;
 
     [ExportCategory("3rd Person")]
-    [Export] private Node3D _target;
     [Export(PropertyHint.Range, "1, 500")] private float _damping;
     [Export] private Vector3 _shoulderOffset;
     [Export] private float _verticalArmLength;
@@ -25,6 +25,7 @@ public partial class Camera : Node3D
     
     private Vector2 _lastMouseMotion = Vector2.Zero;
     private float _totalPitch;
+    private ThirdPersonCameraSystem _system;
 
     public override void _Input(InputEvent @event)
     {
@@ -47,6 +48,9 @@ public partial class Camera : Node3D
 
     public override void _Ready()
     {
+        _system = GetNode<SystemCollection>("/root/Systems")
+            .System<ThirdPersonCameraSystem>();
+        _system.Camera = this;
     }
 
     public override void _Process(double delta)
@@ -64,7 +68,7 @@ public partial class Camera : Node3D
 
     private void UpdatePositionFromTarget(float dt)
     {
-        var targetPosition = _target.Position;
+        var targetPosition = _system.Person?.Position ?? Vector3.Zero;
         var movementTarget = targetPosition + Transform.Basis.Z * _cameraDistance;
 
         if ((Position - movementTarget).Length() < 0.001f)

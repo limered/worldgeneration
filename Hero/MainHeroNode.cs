@@ -1,4 +1,5 @@
 ﻿using dla_terrain.SystemBase;
+using dla_terrain.ThirdPersonCamera;
 using dla_terrain.Utils;
 using Godot;
 
@@ -8,28 +9,31 @@ public partial class MainHeroNode : Node3D
 {
     [Export] private float _speed;
     [Export(PropertyHint.Range, "0, 1, 0.05")] private float _drag;
-    [Export] private Node3D _camera;
 
     private Vector3 _velocity;
     private Vector3 _acceleration;
 
-    private SystemCollection _systems;
+    private HeroSystem _heroSystem;
+    private ThirdPersonCameraSystem _thirdPersonCameraSystem;
 
     public override void _Ready()
     {
-        _systems = GetNode<SystemCollection>("/root/Systems");
+        var systems = GetNode<SystemCollection>("/root/Systems");
+        _heroSystem = systems.System<HeroSystem>();
+        _thirdPersonCameraSystem = systems.System<ThirdPersonCameraSystem>();
+        _thirdPersonCameraSystem.Person = this;
     }
 
     public override void _Process(double delta)
     {
         UpdateMovement(delta);
 
-        _systems.System<HeroSystem>().HeroPosition = Position;
+        _heroSystem.HeroPosition = Position;
     }
 
     private void UpdateMovement(double delta)
     {
-        var direction = _camera?.Position.DirectionTo(Position) ?? Vector3.Zero;
+        var direction = _thirdPersonCameraSystem.Camera?.Position.DirectionTo(Position) ?? Vector3.Zero;
         direction.Y = 0;
 
         var forwardForce = direction;

@@ -36,7 +36,7 @@ shadow_enabled = true
 [node name="TerrainGeneration" type="Node3D" parent="."]
 script = ExtResource("1_medx0")
 _masterSeed = "emil"
-_initialRings = 3
+_initialRings = 2
 _pointDistanceRadius = 25
 _baseHeight = SubResource("FastNoiseLite_4l2sv")
 
