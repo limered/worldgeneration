@@ -12,20 +12,20 @@ public enum CameraType
 
 public partial class CameraNode : Node3D
 {
-    [Export] private CameraType _cameraType; 
-    [Export] private float _speed;
-    [Export] private float _sensitivity;
-
-    [ExportCategory("3rd Person")]
-    [Export(PropertyHint.Range, "1, 500")] private float _damping;
-    [Export] private Vector3 _shoulderOffset;
-    [Export] private float _verticalArmLength;
-    [Export] private float _cameraSide;
     [Export] private float _cameraDistance;
-    
+    [Export] private float _cameraSide;
+    [Export] private CameraType _cameraType;
+
+    [ExportCategory("3rd Person")] [Export(PropertyHint.Range, "1, 500")]
+    private float _damping;
+
     private Vector2 _lastMouseMotion = Vector2.Zero;
-    private float _totalPitch;
+    [Export] private float _sensitivity;
+    [Export] private Vector3 _shoulderOffset;
+    [Export] private float _speed;
     private ThirdPersonCameraSystem _system;
+    private float _totalPitch;
+    [Export] private float _verticalArmLength;
 
     public override void _Input(InputEvent @event)
     {
@@ -55,11 +55,12 @@ public partial class CameraNode : Node3D
 
     public override void _Process(double delta)
     {
-        if(_cameraType == CameraType.Free)
+        if (_cameraType == CameraType.Free)
         {
             UpdateLook();
             UpdateMovement(delta);
-        }else if (_cameraType == CameraType.ThirdPerson)
+        }
+        else if (_cameraType == CameraType.ThirdPerson)
         {
             UpdateLook();
             UpdatePositionFromTarget((float)delta);
@@ -68,15 +69,7 @@ public partial class CameraNode : Node3D
 
     private void UpdatePositionFromTarget(float dt)
     {
-        var targetPosition = _system.Person?.Position ?? Vector3.Zero;
-        var movementTarget = targetPosition + Transform.Basis.Z * _cameraDistance;
-
-        if ((Position - movementTarget).Length() < 0.001f)
-        {
-            return;
-        }
-        
-        Position = Math.ExpDecay(movementTarget, Position, _damping, dt);
+        Position = _system.CameraPosition(dt, _cameraDistance, _damping);
     }
 
     private void UpdateMovement(double delta)

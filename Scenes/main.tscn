@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://dhtu2smaybcsf"]
+[gd_scene load_steps=8 format=3 uid="uid://dhtu2smaybcsf"]
 
 [ext_resource type="Script" path="res://Procedural/Terrain/Nodes/MapNode.cs" id="1_medx0"]
 [ext_resource type="Script" path="res://Utils/CameraNode.cs" id="2_itqx6"]
@@ -17,11 +17,6 @@ sky = SubResource("Sky_ekaju")
 tonemap_mode = 2
 glow_enabled = true
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_4l2sv"]
-noise_type = 3
-frequency = 0.02
-fractal_octaves = 2
-
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_hgohb"]
 
 [node name="Node3D" type="Node3D"]
@@ -38,7 +33,6 @@ script = ExtResource("1_medx0")
 _masterSeed = "emil"
 _initialRings = 2
 _pointDistanceRadius = 25
-_baseHeight = SubResource("FastNoiseLite_4l2sv")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.5, 0.866025, 0, -0.866025, 0.5, 0, 29, 22)
@@ -47,7 +41,7 @@ script = ExtResource("2_itqx6")
 _cameraType = 1
 _speed = 10.0
 _sensitivity = 0.1
-_damping = 200.0
+_damping = 100.0
 _cameraDistance = 6.0
 
 [node name="Hero" type="Node3D" parent="."]
